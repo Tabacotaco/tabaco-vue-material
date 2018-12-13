@@ -1,6 +1,7 @@
 <style lang="scss">
   div.tabaco-snackbar {
     position: fixed;
+    z-index: 1000;
 
     & > button.btn {
       background-color: rgba(0, 0, 0, 0);
