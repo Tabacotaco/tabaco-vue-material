@@ -3,32 +3,8 @@ import { DirectiveOptions, VNodeDirective } from 'vue';
 import { Color } from '@/@types/tabaco.layout';
 import { TbcSnackbar, TbcDialog } from '@/@types/tabaco.msg';
 
-import TabacoSnackbar from '@/@components/msg/Snackbar.vue';
-import TabacoDialog from '@/@components/msg/Dialog.vue';
-
-
-// TODO: For Dropdown List, it'll set focused when menu open.
-export const dropdown: DirectiveOptions = {
-  inserted(el: HTMLElement, binding: VNodeDirective) {
-    $(el).parent().on('show.bs.dropdown', () => binding.value(true));
-    $(el).parent().on('hidden.bs.dropdown', () => binding.value(false));
-
-    $(el).addClass('v-dropdown');
-  }
-};
-
-
-// TODO: For Dropdown List, it'll not close when select any option.
-export const keepDropdown: DirectiveOptions = {
-  inserted(el: HTMLElement) {
-    if ($(el).hasClass('v-dropdown')) $(el).parent().on('hide.bs.dropdown', (e) => {
-      return !((e as any).clickEvent && $.contains(
-        $(el).parent()[0],
-        $((e as any).clickEvent.target)[0]
-      ) === true);
-    });
-  }
-};
+import TabacoSnackbar from '@/@components/tool/Snackbar.vue';
+import TabacoDialog from '@/@components/tool/Dialog.vue';
 
 
 /** TODO: Append Loading Mask to the specify DOM.
@@ -99,8 +75,5 @@ export const snackbar = new TbcSnackbar((tbcSnackbar) => ({
 /** TODO: Dialog
   */
 export const dialog = new TbcDialog((tbcDialog) => ({
-  inserted : (el: HTMLElement, binding: VNodeDirective): void => tbcDialog.binding(TabacoDialog, el, binding),
-  destroyed() {
-    console.log('========= ');
-  },
+  inserted : (el: HTMLElement, binding: VNodeDirective): void => tbcDialog.binding(TabacoDialog, el, binding)
 }));

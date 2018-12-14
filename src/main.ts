@@ -8,12 +8,16 @@ import 'hammerjs/hammer.min.js';
 import 'bootstrap/dist/js/bootstrap.min.js';
 
 
-Vue.config.productionTip = false;
+if ('/' === location.pathname)
+  location.href = '/tabaco-vue-material/';
+else {
+  Vue.config.productionTip = false;
 
-new Vue({
-  render: (h) => {
-    (window as any).$ = $;
+  new Vue({
+    render: (h) => {
+      (window as any).$ = $;
 
-    return h(App);
-  }
-}).$mount('#app');
+      return h(App);
+    }
+  }).$mount('#app');
+}

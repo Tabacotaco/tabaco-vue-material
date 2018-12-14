@@ -11,6 +11,7 @@
       & > li[contenteditable=true] {
         max-width: 100%;
         min-width: 40px;
+        padding-right: 18px;
         line-height: 1.8;
         white-space: nowrap;
         overflow: hidden;
@@ -45,8 +46,8 @@
     required,
     format: displayFormat
   }">
-    <div slot="editor" slot-scope="{focused}" class="tabaco-multi-combobox dropdown editor">
-      <ul v-dropdown="focused" v-keep-dropdown class="nav nav-pills selected-options" data-toggle="dropdown" @click="$refs.filter.focus()">
+    <div slot="editor" slot-scope="{setFocused}" class="tabaco-multi-combobox dropdown editor">
+      <ul v-dropdown="setFocused" v-keep-dropdown class="nav nav-pills selected-options" data-toggle="dropdown" @click="$refs.filter.focus()">
 
         <!-- TODO: Selected Display -->
         <li v-for="(dataModel, index) in selectedOptions" :key="dataModel[valueField]" class="nav-item">
@@ -113,7 +114,7 @@
   import { DirectiveOptions, VNodeDirective, VNode } from 'vue';
   import { Component, Prop } from 'vue-property-decorator';
 
-  import { dropdown, keepDropdown } from '@/@directives/group.directive';
+  import { dropdown, keepDropdown } from '@/@directives/editor.directive';
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
 
   import TabacoFieldVue, {

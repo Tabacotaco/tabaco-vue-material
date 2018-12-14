@@ -2,7 +2,7 @@
 
 <script lang="ts">
   import { Component, Vue, Prop } from 'vue-property-decorator';
-  import { dialog } from '@/@directives/group.directive';
+  import { dialog } from '@/@directives/basic.directive';
 
 
   @Component

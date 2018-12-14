@@ -16,9 +16,9 @@
     required,
     format
   }">
-    <input slot="editor" slot-scope="{focused}"
+    <input slot="editor" slot-scope="{setFocused}"
       type="text" class="tabaco-textfield editor"
-      v-model="text" @focus="focused(true)" @blur="focused(false)" />
+      v-model="text" @focus="setFocused(true)" @blur="setFocused(false)" />
   </TabacoFieldGroup>
 </template>
 

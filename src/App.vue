@@ -19,7 +19,7 @@
         :format="v => v? 'Bright' : 'Light'" />
 
       <TabacoCombobox label="Main Theme" :color="themeColor" :def="6" :sm="4" :disabled="disabled"
-        valueField="code" :options="comboOpts" :format="dataModel => dataModel.text" v-model="mainColor">
+        valueField="code" :options="comboOpts.filter(opt => opt.code != themeColor)" :format="dataModel => dataModel.text" v-model="mainColor">
 
         <span slot="option" slot-scope="{dataModel, displayText, index}">
           <i class="fa fa-paint-brush mr-2" /> {{displayText}}
@@ -27,7 +27,7 @@
       </TabacoCombobox>
 
       <TabacoCombobox label="Field Theme" :color="themeColor" :def="6" :sm="4" :disabled="disabled"
-        valueField="code" :options="comboOpts" :format="dataModel => dataModel.text" v-model="themeColor">
+        valueField="code" :options="comboOpts.filter(opt => opt.code != mainColor)" :format="dataModel => dataModel.text" v-model="themeColor">
 
         <span slot="option" slot-scope="{dataModel, displayText, index}">
           <i class="fa fa-paint-brush mr-2" /> {{displayText}}
@@ -82,9 +82,9 @@
   import { Component, Vue } from 'vue-property-decorator';
 
   import { ButtonType, SnackbarPosition } from '@/@types/tabaco.msg.ts';
-  import { theme, loading, snackbar, dialog } from '@/@directives/group.directive';
+  import { theme, loading, snackbar, dialog } from '@/@directives/basic.directive';
 
-  import DialogContent from '@/@components/msg/DialogContent.vue';
+  import DialogContent from '@/@components/tool/DialogContent.vue';
 
   import TabacoTextfield from '@/@components/editor/TabacoTextfield.vue';
   import TabacoTextarea from '@/@components/editor/TabacoTextarea.vue';

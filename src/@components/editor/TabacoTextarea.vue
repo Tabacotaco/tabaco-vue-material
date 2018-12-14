@@ -21,9 +21,9 @@
     required,
     format: overrideFormat
   }">
-    <textarea slot="editor" slot-scope="{focused}" ref="editor"
+    <textarea slot="editor" slot-scope="{setFocused}" ref="editor"
       class="tabaco-textarea editor" :rows="showRows"
-      v-model="text" @focus="focused(true)" @blur="focused(false) || doSizeSync()" />
+      v-model="text" @focus="setFocused(true)" @blur="setFocused(false) || doSizeSync()" />
   </TabacoFieldGroup>
 </template>
 

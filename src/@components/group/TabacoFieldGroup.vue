@@ -71,9 +71,9 @@
 
 <template>
   <div class="tabaco-field-group" :class="[...columnSizeClass, ...labelOnTopClass, `theme-${colorCode}`, lockClass]">
-    <slot name="tool" :isFocused="focused" :focused="setFocused" />
+    <slot name="tool" :isFocused="focused" :setFocused="setFocused" />
 
-    <slot name="editor" :isFocused="focused" :focused="setFocused" />
+    <slot name="editor" :isFocused="focused" :setFocused="setFocused" />
 
     <slot name="display" :value="value" :format="format">
       <span class="display" v-html="empty ? '' : format(value)" />
@@ -134,6 +134,10 @@
 
     setFocused(isFocused: boolean): void {
       this.focused = isFocused;
+
+      if (this.focused) {
+        this.$el.scrollIntoView();
+      }
     }
   }
 </script>

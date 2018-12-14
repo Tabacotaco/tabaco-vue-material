@@ -252,7 +252,6 @@ div.tabaco-field-group {
 
     // Dropdown Menu
     & > div.dropdown-menu {
-      max-height: 50vh;
       overflow-y: auto;
       top: .375rem !important;
 
@@ -383,6 +382,16 @@ div.tabaco-field-group {
       &.dropdown::after { border-top-color: #343a40; }
     }
   }
+}
+
+
+// TODO: RWD
+@media (max-height: 330px) {
+  div.tabaco-field-group > div.editor.dropdown > div.dropdown-menu { max-height: 100vh; }
+}
+
+@media (min-height: 331px) {
+  div.tabaco-field-group > div.editor.dropdown > div.dropdown-menu { max-height: 330px; }
 }
 
 

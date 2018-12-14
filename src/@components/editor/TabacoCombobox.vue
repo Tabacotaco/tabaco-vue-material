@@ -4,6 +4,7 @@
       & > input.filter-text {
         display: block !important;
         width: 100%;
+        padding-right: 18px;
       }
     }
   }
@@ -18,8 +19,8 @@
     required,
     format: displayFormat
   }">
-    <div slot="editor" slot-scope="{focused}" class="tabaco-combobox dropdown editor">
-      <input v-dropdown="focused" type="text" class="filter-text" data-toggle="dropdown" v-model="filterText"
+    <div slot="editor" slot-scope="{setFocused}" class="tabaco-combobox dropdown editor">
+      <input v-dropdown="setFocused" type="text" class="filter-text" data-toggle="dropdown" v-model="filterText"
         @input="onTextfieldInput()"
         @keyup.up="setOptionHover(hoverIndex === null ? -1 : (hoverIndex - 1))"
         @keyup.down="setOptionHover(hoverIndex === null ? 0 : (hoverIndex + 1))"
@@ -50,7 +51,7 @@
   import { DirectiveOptions, VNodeDirective, VNode } from 'vue';
   import { Component, Prop } from 'vue-property-decorator';
 
-  import { dropdown } from '@/@directives/group.directive';
+  import { dropdown } from '@/@directives/editor.directive';
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
 
   import TabacoFieldVue, {

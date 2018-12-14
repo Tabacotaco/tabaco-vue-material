@@ -2,7 +2,7 @@ import { Vue, Component, Prop } from 'vue-property-decorator';
 import { ComponentOptions, DirectiveOptions, VNodeDirective, DirectiveFunction } from 'vue';
 
 import { Color } from '@/@types/tabaco.layout';
-import DialogContent from '@/@components/msg/DialogContent.vue';
+import DialogContent from '@/@components/tool/DialogContent.vue';
 
 
 enum MessageClass {

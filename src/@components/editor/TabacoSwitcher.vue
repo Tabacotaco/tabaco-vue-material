@@ -48,13 +48,13 @@
     required,
     format: overrideFormat
   }">
-    <span slot="editor" slot-scope="{focused}" class="editor switcher-display">
+    <span slot="editor" class="editor switcher-display">
       {{overrideFormat(turnOn)}}
     </span>
 
-    <div slot="tool" slot-scope="{isFocused, focused}" class="tabaco-switcher"
+    <div slot="tool" slot-scope="{isFocused, setFocused}" class="tabaco-switcher"
       :class="[`bg-${turnOn ? colorCode : 'secondary'}`, turnOn ? 'on' : 'off']"
-      @click="isDisabled ? null : setTurnOn(focused)">
+      @click="isDisabled ? null : setTurnOn(setFocused)">
 
       <span class="rounded-circle bg-white" />
     </div>
@@ -93,14 +93,14 @@
 
     isEmpty(): boolean { return false; }
 
-    setTurnOn(focused: ((isFocused: boolean) => void)): void {
+    setTurnOn(setFocused: ((isFocused: boolean) => void)): void {
       clearTimeout(this.delayID);
 
       this.turnOn = !this.turnOn;
-      focused(true);
+      setFocused(true);
 
       this.delayID = setTimeout(() => {
-        focused(false);
+        setFocused(false);
         clearTimeout(this.delayID);
       }, 500);
     }
