@@ -37,9 +37,11 @@
 
     & > div.mb-stress {
       & div.dropdown-menu {
-        position: relative;
-        width: 80%;
+        position: static;
         display: block;
+        float: none;
+        margin: auto;
+        width: 80%;
       }
     }
   }

@@ -76,8 +76,9 @@
         }
 
         & > div.modal-body {
-          max-height: calc(100vh - 178px);
+          height: calc(100vh - 178px);
           overflow-y: auto;
+          min-height: 110px;
         }
 
         & > div.modal-footer > div.btn-group {
@@ -122,7 +123,7 @@
             </h6>
           </div>
 
-          <div class="modal-body text-white py-3 d-flex justify-content-center">
+          <div class="modal-body text-white py-3">
             <slot v-if="editable && isMbStress" name="mbstress" :oriValue="$data._value" />
 
             <span v-if="isInvalid" class="tabaco-invalid-msg mt-3">

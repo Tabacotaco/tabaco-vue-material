@@ -12,8 +12,11 @@
 
     & > div.mb-stress {
       & div.dropdown-menu {
-        position: relative;
+        position: static;
         display: block;
+        float: none;
+        margin: auto;
+        width: 80%;
       }
     }
   }

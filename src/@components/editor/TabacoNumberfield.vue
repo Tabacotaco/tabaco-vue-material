@@ -62,11 +62,11 @@
         <i class="fa fa-plus" />
       </button>
 
-      <input v-autofocus  type="number" class="editor" v-model="number" />
-
       <button type="button" class="btn minus btn-outline-light" @click="onSpinner(false)">
         <i class="fa fa-minus" />
       </button>
+
+      <input v-autofocus  type="number" class="editor" v-model="number" />
     </template>
   </TabacoFieldGroup>
 </template>
