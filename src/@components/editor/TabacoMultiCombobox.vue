@@ -1,7 +1,7 @@
 <style lang="scss">
-  div.tabaco-field-group {
-    & > div.tabaco-multi-combobox,
-    & > div.tabaco-multi-combobox + span.display {
+  div.tabaco-field-group.tabaco-multi-combobox {
+    & > div.editor,
+    & > span.display {
       padding: .375rem .75rem 0 .75rem !important;
     }
 
@@ -34,25 +34,25 @@
         }
       }
     }
+
+    & > div.mb-stress {
+      & div.dropdown-menu {
+        position: relative;
+        display: block;
+      }
+    }
   }
 </style>
 
 <template>
-  <TabacoFieldGroup :empty="isEmpty()" :value="selectedOptions" :options="{
-    def, sm, md, lg, xl,
-    color,
-    label,
-    disabled,
-    required,
-    format: displayFormat
-  }">
-    <div slot="editor" slot-scope="{setFocused}" class="tabaco-multi-combobox dropdown editor">
-      <ul v-dropdown="setFocused" v-keep-dropdown class="nav nav-pills selected-options" data-toggle="dropdown" @click="$refs.filter.focus()">
+  <TabacoFieldGroup v-model="option" :options="getGroupOpts({mainClass: 'tabaco-multi-combobox', format: displayFormat})">
+    <div slot="editor" slot-scope="{setFocused}" class="dropdown editor">
+      <ul ref="toggle" v-dropdown="setFocused" v-keep-dropdown class="nav nav-pills selected-options" data-toggle="dropdown" @click="$refs.filter.focus()">
 
         <!-- TODO: Selected Display -->
-        <li v-for="(dataModel, index) in selectedOptions" :key="dataModel[valueField]" class="nav-item">
+        <li v-for="(dataModel, index) in option" :key="dataModel[valueField]" class="nav-item">
           <a class="nav-link" :class="['bg-' + colorCode, selectedTextColor]">
-            <button type="button" class="close ml-2" :class="[selectedTextColor]" @click="setSelected(false, dataModel)">
+            <button type="button" class="close ml-2" :class="[selectedTextColor]" @click="setSelected(dataModel)">
               <span>&times;</span>
             </button>
 
@@ -63,19 +63,19 @@
         </li>
 
         <!-- TODO: Filter Input -->
-        <li ref="filter" class="nav-item filter-text" contenteditable="true"
+        <li ref="filter" v-autofocus="onAutofocus" class="nav-item filter-text" contenteditable="true"
           @input="onTextfieldInput()"
           @blur="onFilterTextBlur()"
           @keyup.up="setOptionHover(hoverIndex === null ? -1 : (hoverIndex - 1))"
           @keyup.down="setOptionHover(hoverIndex === null ? 0 : (hoverIndex + 1))"
-          @keyup.enter="hoverIndex === null? null : setSelected(true, datalist[hoverIndex])"
-          @keyup.backspace="selectedOptions.length > 0 && !isFiltering? setSelected(false, selectedOptions[selectedOptions.length - 1]) : null" />
+          @keyup.enter="hoverIndex === null? null : setSelected(datalist[hoverIndex])"
+          @keyup.backspace="option.length > 0 && !isFiltering? setSelected(option[option.length - 1]) : null" />
       </ul>
 
       <div ref="menu" class="dropdown-menu light" :class="[`tbc-${colorCode}`]">
         <a v-for="(dataModel, index) in datalist" :key="dataModel[valueField]"
           class="dropdown-item" :class="{hover: hoverIndex === index, active: isSelected(dataModel)}"
-          @click="setSelected(!isSelected(dataModel), dataModel)"
+          @click="setSelected(dataModel)"
           @mouseover="setOptionHover(index)"
           @mouseout="setOptionHover()">
 
@@ -90,12 +90,13 @@
       </div>
     </div>
 
-    <template slot="display" slot-scope="{value, format}">
-      <span class="display">
+    <template slot="display" slot-scope="{format, setFocused}">
+      <span class="display" @click="setFocused(true)">
         <ul class="nav nav-pills selected-options">
-          <li v-for="(dataModel, index) in value" :key="dataModel[valueField]" class="nav-item">
+          <li v-for="(dataModel, index) in option" :key="dataModel[valueField]" class="nav-item">
             <a class="nav-link" :class="['bg-' + colorCode, selectedTextColor]">
-              <button type="button" class="close ml-2" :class="[selectedTextColor]" @click="setSelected(false, dataModel)">
+              <button type="button" class="close ml-2" :class="[selectedTextColor]" :disabled="disabled"
+                @click="disabled ? null : setSelected(dataModel)">
                 <span>&times;</span>
               </button>
 
@@ -107,13 +108,30 @@
         </ul>
       </span>
     </template>
+
+    <div slot="mbstress" class="dropdown-menu light" :class="[`tbc-${colorCode}`]">
+      <a v-for="(dataModel, index) in datalist" :key="dataModel[valueField]"
+        class="dropdown-item" :class="{hover: hoverIndex === index, active: isSelected(dataModel)}"
+        @click="setSelected(dataModel)"
+        @mouseover="setOptionHover(index)"
+        @mouseout="setOptionHover()">
+
+        <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
+          {{displayFormat(dataModel)}}
+        </slot>
+      </a>
+
+      <a v-if="datalist.length === 0" class="dropdown-item disabled text-center text-secondary">
+        Data Not Found
+      </a>
+    </div>
   </TabacoFieldGroup>
 </template>
 
 <script lang="ts">
-  import { DirectiveOptions, VNodeDirective, VNode } from 'vue';
   import { Component, Prop } from 'vue-property-decorator';
 
+  import { autofocus } from '@/@directives/editor.directive';
   import { dropdown, keepDropdown } from '@/@directives/editor.directive';
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
 
@@ -127,6 +145,7 @@
 
   @Component({
     directives: {
+      autofocus,
       dropdown,
       keepDropdown
     },
@@ -147,25 +166,26 @@
 
     @Prop() value!: OptionValueType<ValueType[]>;
 
-    set optValue(v: OptionValueType<ValueType[]>) {
-      this.$emit('input', v);
+    set option(v: DataModelType[]) {
+      const sjson = this.selectedOptions.map(opt => JSON.stringify(opt));
+      const vjson = v.map(opt => JSON.stringify(opt));
+      const dis   = sjson.filter(opt => vjson.indexOf(opt) < 0);
+      const sel   = vjson.filter(opt => sjson.indexOf(opt) < 0);
+
+      this.selectedOptions = v;
+      this.$emit('input', this.selectedOptions.map(opt => (opt as any)[this.valueField]));
+
+      if (dis.length > 0) this.$emit('disselected' , dis.map(json => JSON.parse(json))[0]);
+      if (sel.length > 0) this.$emit('selected'    , sel.map(json => JSON.parse(json))[0]);
     }
 
-    get optValue(): OptionValueType<ValueType[]> {
-      return this.value;
+    get option(): DataModelType[] {
+      return this.selectedOptions;
     }
 
-    get isFiltering(): boolean {
-      return 'string' === typeof this.filterText && this.filterText.length > 0;
-    }
-
-    get isRemote(): boolean {
-      return this.options instanceof Function;
-    }
-
-    get selectedTextColor(): string {
-      return `text-${['warning', 'light'].indexOf(this.colorCode) >= 0 ? 'dark' : 'white'}`;
-    }
+    get isFiltering(): boolean { return 'string' === typeof this.filterText && this.filterText.length > 0; }
+    get isRemote(): boolean { return this.options instanceof Function; }
+    get selectedTextColor(): string { return `text-${['warning', 'light'].indexOf(this.colorCode) >= 0 ? 'dark' : 'white'}`; }
 
     get displayFormat(): FormatType<DataModelType> {
       return this.format instanceof Function ? this.format
@@ -190,7 +210,7 @@
           const mappings = this.datalist.filter((dataModel: DataModelType) => (this.value as ValueType[]).indexOf((dataModel as any)[this.valueField]) >= 0);
 
           if (mappings.length === 0) 
-            this.optValue = [];
+            this.option = [];
           else
             this.selectedOptions = this.selectedOptions.concat(mappings);
         } else {
@@ -199,12 +219,10 @@
       }
     }
 
-    isEmpty(): boolean {
-      return !(this.value instanceof Array) || this.value.length === 0;
-    }
+    isEmpty(): boolean { return !(this.value instanceof Array) || this.value.length === 0; }
 
     isSelected(dataModel: DataModelType): boolean {
-      return (this.selectedOptions instanceof Array ? this.selectedOptions : []).indexOf(dataModel) >= 0;
+      return this.option.indexOf(dataModel) >= 0;
     }
 
     setOptionHover(newIndex?: HoverCtrlType): void {
@@ -217,20 +235,16 @@
       }
     }
 
-    setSelected(isChecked: boolean, dataModel: DataModelType): void {
-      if (isChecked) {
-        this.selectedOptions.push(dataModel);
+    setSelected(dataModel: DataModelType): void {
+      const option = ([] as DataModelType[]).concat(this.option);
+      const index = option.indexOf(dataModel);
 
-        this.$emit('input', this.selectedOptions.map(selected => (selected as any)[this.valueField]));
-        this.$emit('selected', this.selectedOptions);
+      index < 0 ? option.push(dataModel) : option.splice(index, 1);
+      this.option = option;
+    }
 
-        this.onFilterTextBlur(false);
-      } else {
-        this.selectedOptions.splice(this.selectedOptions.indexOf(dataModel), 1);
-
-        this.$emit('input', this.selectedOptions.map(selected => (selected as any)[this.valueField]));
-        this.$emit('disselected', dataModel);
-      }
+    onAutofocus(): void {
+      ($(this.$refs.toggle) as any).dropdown('toggle');
     }
 
     onFilterTextBlur(clearHoverIndex: boolean = true): void {

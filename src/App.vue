@@ -11,7 +11,8 @@
   
       <TabacoTextfield label="Full Name" :color="themeColor" :def="6" :sm="4" :required="true" :disabled="disabled" v-model="textValue" />
 
-      <TabacoNumberfield label="Age" :color="themeColor" :def="6" :sm="4" :step=".1" :scale="2" :disabled="disabled" v-model="numberValue" />
+      <TabacoNumberfield label="Age" numeral="0,0.00" :color="themeColor" :def="6" :sm="4" :step=".1" :scale="2" :disabled="disabled"
+        v-model="numberValue" :valid="isNumberValid" />
     </div>
 
     <div class="row">
@@ -163,6 +164,10 @@
 
     get modalFieldColor(): string {
       return 'light' === this.themeColor ? 'dark' : 'light';
+    }
+
+    isNumberValid(v: number): string | void {
+      return v === 0 ? 'Can\'t be 0' : undefined;
     }
 
     showLoadingMask(): void {

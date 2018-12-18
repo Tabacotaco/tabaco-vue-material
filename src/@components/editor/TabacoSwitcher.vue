@@ -1,18 +1,15 @@
 <style lang="scss">
-  div.tabaco-field-group {
-    & > span.switcher-display {
+  div.tabaco-field-group.tabaco-switcher {
+    & > span.editor,
+    & > span.display {
       width: calc(100% - 68px);
-
-      & + span.display {
-        width: calc(100% - 98px);
-      }
     }
 
-    &:not(.disabled) > div.tabaco-switcher {
+    &:not(.disabled) > div.tabaco-switcher-btn {
       cursor: pointer;
     }
 
-    & > div.tabaco-switcher {
+    & > div.tabaco-switcher-btn {
       display: block;
       float: right;
       height: 38px;
@@ -40,21 +37,14 @@
 </style>
 
 <template>
-  <TabacoFieldGroup :empty="isEmpty()" :value="turnOn" :options="{
-    def, sm, md, lg, xl,
-    color,
-    label,
-    disabled,
-    required,
-    format: overrideFormat
-  }">
-    <span slot="editor" class="editor switcher-display">
+  <TabacoFieldGroup :value="turnOn" :options="getGroupOpts({mainClass: 'tabaco-switcher', format: overrideFormat})">
+    <span slot="editor" class="editor">
       {{overrideFormat(turnOn)}}
     </span>
 
-    <div slot="tool" slot-scope="{isFocused, setFocused}" class="tabaco-switcher"
+    <div slot="tool" slot-scope="{isFocused, setFocused}" class="tabaco-switcher-btn"
       :class="[`bg-${turnOn ? colorCode : 'secondary'}`, turnOn ? 'on' : 'off']"
-      @click="isDisabled ? null : setTurnOn(setFocused)">
+      @click="isDisabled ? null : (setFocused(true) || setTurnOn().then(() => setFocused(false)))">
 
       <span class="rounded-circle bg-white" />
     </div>
@@ -93,16 +83,30 @@
 
     isEmpty(): boolean { return false; }
 
-    setTurnOn(setFocused: ((isFocused: boolean) => void)): void {
-      clearTimeout(this.delayID);
-
-      this.turnOn = !this.turnOn;
-      setFocused(true);
-
-      this.delayID = setTimeout(() => {
-        setFocused(false);
+    setTurnOn(): Promise<void> {
+      return new Promise<void>(resolve => {
         clearTimeout(this.delayID);
-      }, 500);
+        this.turnOn = !this.turnOn;
+        
+        this.delayID = setTimeout(() => {
+          resolve();
+
+          clearTimeout(this.delayID);
+        }, 500);
+      });
     }
+
+    // setTurnOn(setFocused: ((isFocused: boolean) => void)): void {
+    //   clearTimeout(this.delayID);
+
+    //   this.turnOn = !this.turnOn;
+    //   setFocused(true);
+
+    //   this.delayID = setTimeout(() => {
+    //     setFocused(false);
+
+    //     clearTimeout(this.delayID);
+    //   }, 500);
+    // }
   }
 </script>

@@ -16,6 +16,10 @@ export enum Color {
   SECONDARY = 'secondary'
 };
 
+export const getColorCode = (color: Color = Color.PRIMARY): string => {
+  return color;
+};
+
 // TODO: RWD Grid Column Options
 export type SizeType = number | boolean;
 export type TColumnSize = ColumnSize | undefined;

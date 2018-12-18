@@ -1,26 +1,27 @@
 <style lang="scss">
-  div.tabaco-field-group {
-    & > div.tabaco-combobox {
+  div.tabaco-field-group.tabaco-combobox {
+    & > div.editor {
       & > input.filter-text {
         display: block !important;
         width: 100%;
         padding-right: 18px;
       }
     }
+
+    & > div.mb-stress {
+      & div.dropdown-menu {
+        position: relative;
+        display: block;
+      }
+    }
   }
 </style>
 
 <template>
-  <TabacoFieldGroup :empty="isEmpty()" :value="selectedOption" :options="{
-    def, sm, md, lg, xl,
-    color,
-    label,
-    disabled,
-    required,
-    format: displayFormat
-  }">
-    <div slot="editor" slot-scope="{setFocused}" class="tabaco-combobox dropdown editor">
-      <input v-dropdown="setFocused" type="text" class="filter-text" data-toggle="dropdown" v-model="filterText"
+  <TabacoFieldGroup v-model="option" :options="getGroupOpts({mainClass: 'tabaco-combobox', format: displayFormat})">
+    <div slot="editor" slot-scope="{setFocused}" class="dropdown editor">
+      <input ref="toggle" v-autofocus="onAutofocus" v-dropdown="setFocused"
+        type="text" class="filter-text" data-toggle="dropdown" v-model="filterText"
         @input="onTextfieldInput()"
         @keyup.up="setOptionHover(hoverIndex === null ? -1 : (hoverIndex - 1))"
         @keyup.down="setOptionHover(hoverIndex === null ? 0 : (hoverIndex + 1))"
@@ -44,6 +45,23 @@
         </a>
       </div>
     </div>
+
+    <div slot="mbstress" class="dropdown-menu light" :class="[`tbc-${colorCode}`]">
+      <a v-for="(dataModel, index) in datalist" :key="dataModel[valueField]"
+        class="dropdown-item" :class="{hover: hoverIndex === index, active: value === dataModel[valueField]}"
+        @click="setSelected(dataModel)"
+        @mouseover="setOptionHover(index)"
+        @mouseout="setOptionHover()">
+
+        <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
+          {{displayFormat(dataModel)}}
+        </slot>
+      </a>
+
+      <a v-if="datalist.length === 0" class="dropdown-item disabled text-center text-secondary">
+        Data Not Found
+      </a>
+    </div>
   </TabacoFieldGroup>
 </template>
 
@@ -51,6 +69,7 @@
   import { DirectiveOptions, VNodeDirective, VNode } from 'vue';
   import { Component, Prop } from 'vue-property-decorator';
 
+  import { autofocus } from '@/@directives/editor.directive';
   import { dropdown } from '@/@directives/editor.directive';
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
 
@@ -64,6 +83,7 @@
 
   @Component({
     directives: {
+      autofocus,
       dropdown
     },
     components: {
@@ -82,12 +102,15 @@
 
     @Prop() value!: OptionValueType<ValueType>;
 
-    set optValue(v: OptionValueType<ValueType>) {
-      this.$emit('input', v);
+    set option(v: DataModelType | null) {
+      this.selectedOption = v;
+
+      this.$emit('input', v === null ? null : (v as any)[this.valueField]);
+      this.$emit(this.selectedOption === null ? 'disselected' : 'selected', this.selectedOption);
     }
 
-    get optValue(): OptionValueType<ValueType> {
-      return this.value;
+    get option(): DataModelType | null {
+      return this.selectedOption;
     }
 
     get isRemote(): boolean {
@@ -152,12 +175,13 @@
     }
 
     setSelected(dataModel: DataModelType): void {
-      this.selectedOption = dataModel;
-      this.filterText     = this.selectedDisplay;
-      this.hoverIndex     = null;
+      this.hoverIndex = null;
+      this.option     = dataModel;
+      this.filterText = this.selectedDisplay;
+    }
 
-      this.$emit('input', (this.selectedOption as any)[this.valueField]);
-      this.$emit('selected', this.selectedOption);
+    onAutofocus(): void {
+      ($(this.$refs.toggle) as any).dropdown('toggle');
     }
 
     onFilterTextBlur(): void {
@@ -172,12 +196,9 @@
     onTextfieldInput(): void {
       this.hoverIndex = 0;
 
-      if ('string' !== typeof this.filterText || this.filterText.trim().length === 0) {
-        this.selectedOption = null;
-
-        this.$emit('input', this.selectedOption);
-        this.$emit('disselected');
-      } else if (this.isRemote && this.isFiltering) {
+      if ('string' !== typeof this.filterText || this.filterText.trim().length === 0)
+        this.option = null;
+      else if (this.isRemote && this.isFiltering) {
         clearTimeout(this.delayID);
 
         this.delayID = setTimeout(() =>

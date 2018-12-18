@@ -2,12 +2,14 @@ import { Vue, Component, Prop } from 'vue-property-decorator';
 import { ComponentOptions, DirectiveOptions, VNodeDirective, DirectiveFunction } from 'vue';
 
 import { Color } from '@/@types/tabaco.layout';
+
 import DialogContent from '@/@components/tool/DialogContent.vue';
 
 
 enum MessageClass {
-  SNACKBAR = 'tabaco-snackbar',
-  DIALOG   = 'tabaco-dialog'
+  SNACKBAR        = 'tabaco-snackbar',
+  DIALOG          = 'tabaco-dialog',
+  MB_STRESS_FIELD = 'tabaco-mb-stress-field'
 }
 
 export enum ButtonType { CONFIRM, CANCEL }
@@ -53,15 +55,15 @@ class LongPromise<T> {
   }
 }
 
-abstract class MessageVue extends Vue {
+abstract class MessageVue<PromiseResult = MessageResult> extends Vue {
   CancelType = ButtonType.CANCEL;
 
-  closingPromise!: LongPromise<MessageResult>;
+  closingPromise!: LongPromise<PromiseResult>;
 
   abstract vueClass: MessageClass;
   abstract defaultBtns: IButtonOpts[];
 
-  abstract show(): LongPromise<MessageResult>;
+  abstract show(): LongPromise<PromiseResult>;
   abstract hide(type: ButtonType): void;
 
   @Prop() color?: Color;
@@ -86,16 +88,16 @@ abstract class MessageVue extends Vue {
   }
 }
 
-abstract class DirectiveRemote<Mvue extends MessageVue, BtnType, ContentType = string> implements DirectiveOptions {
+abstract class PopupRemote<Mvue extends MessageVue, BtnType, ContentType = string> implements DirectiveOptions {
   abstract BINDING_CLS: string;
   abstract VUE_CLS: string;
 
-  abstract getDefaultProps(binding: VNodeDirective): any;
+  abstract getDefaultProps(binding?: VNodeDirective): any;
   abstract convertBtns(btns?: BtnType): ConvertBtns;
 
   private vue!: Mvue;
 
-  constructor(private directiveOpts: ((tbcSnackbar: DirectiveRemote<Mvue, BtnType, ContentType>) => DirectiveOptions)) {}
+  constructor(private directiveOpts: ((tbcSnackbar: PopupRemote<Mvue, BtnType, ContentType>) => DirectiveOptions)) {}
 
   // TODO: Directives
   get bind()             : DirectiveFunction | undefined { return this.directiveOpts(this).bind; }
@@ -228,7 +230,6 @@ export class Snackbar extends MessageVue {
   }
 }
 
-
 // TODO: Dialog Vue Component
 @Component
 export class Dialog extends MessageVue {
@@ -283,7 +284,7 @@ export class Dialog extends MessageVue {
 
 
 // TODO: Snackbar Remote Controller
-export class TbcSnackbar extends DirectiveRemote<Snackbar, IButtonOpts> {
+export class TbcSnackbar extends PopupRemote<Snackbar, IButtonOpts> {
   private static DefaultDelay = 5000;
 
   BINDING_CLS = 'tabaco-snackbar-binding';
@@ -305,7 +306,7 @@ export class TbcSnackbar extends DirectiveRemote<Snackbar, IButtonOpts> {
 }
 
 // TODO: Dialog Remote Controller
-export class TbcDialog extends DirectiveRemote<Dialog, IButtonOpts[], DialogContentType> {
+export class TbcDialog extends PopupRemote<Dialog, IButtonOpts[], DialogContentType> {
   BINDING_CLS = 'tabaco-dialog-binding';
   VUE_CLS     = MessageClass.DIALOG;
 
@@ -313,7 +314,5 @@ export class TbcDialog extends DirectiveRemote<Dialog, IButtonOpts[], DialogCont
     return btns ? btns : undefined;
   }
 
-  getDefaultProps(binding: VNodeDirective): any {
-    return {};
-  }
+  getDefaultProps(): any { return {}; }
 }

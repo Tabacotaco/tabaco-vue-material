@@ -1,8 +1,5 @@
 // TODO: Theme Style
 .tbc-theme {
-  position: relative;
-  z-index: 1;
-
   &:not(body) {
     border-radius: .25rem;
   }
@@ -159,14 +156,6 @@
       top: 0 !important;
       width: 100%;
     }
-
-    & > input.tabaco-numberfield.editor + span.display {
-      width: calc(100% - 28px) !important;
-    }
-
-    & > span.switcher-display + span.display {
-      width: calc(100% - 68px) !important;
-    }
   }
 }
 
@@ -177,33 +166,12 @@ button.btn:disabled {
 }
 
 div.tabaco-field-group {
-  &:not(.focused):hover {
-    animation: tabaco-shock-group 1 .1s linear;
-  }
-
-  &.disabled {
-    cursor: not-allowed;
-
-    & > .editor { display: none !important; }
-
-    & > span.display {
-      position: relative !important;
-      top: 0 !important;
-      width: 100%;
-    }
-
-    & > input.tabaco-numberfield.editor + span.display {
-      width: calc(100% - 28px) !important;
-    }
-
-    & > span.switcher-display + span.display {
-      width: calc(100% - 68px) !important;
-    }
-  }
+  &:not(.focused):hover { animation: tabaco-shock-group 1 .1s linear; }
+  &.disabled { cursor: not-allowed; }
 
   // TODO: Display & Editor
   & > .display,
-  & > .editor {
+  & .editor {
     display: block !important;
     background-color: rgba(0, 0, 0, 0) !important;
     min-height: calc(2.25rem + 2px) !important;
@@ -249,76 +217,71 @@ div.tabaco-field-group {
       border-width: 0 !important;
       color: inherit;
     }
+  }
 
-    // Dropdown Menu
-    & > div.dropdown-menu {
-      overflow-y: auto;
-      top: .375rem !important;
+  // Dropdown Menu
+  & div.dropdown-menu {
+    overflow-y: auto;
+    top: 8px !important;
 
-      & > a.dropdown-item {
-        &:not(.disabled) { cursor: pointer; }
-        &.disabled { cursor: not-allowed; }
-        &.hover:not(.disabled) {
-          color: white !important;
-          background-color: #6c757d !important;
-        }
-
-        &:hover {
-          background-color: unset;
-        }
+    & > a.dropdown-item {
+      &:not(.disabled) { cursor: pointer; }
+      &.disabled { cursor: not-allowed; }
+      &.hover:not(.disabled) {
+        color: white !important;
+        background-color: #6c757d !important;
       }
 
-      &.tbc-primary > a.dropdown-item.active {
-        color: white;
-        background-color: #007bff;
+      &:hover {
+        background-color: unset;
       }
+    }
 
-      &.tbc-info > a.dropdown-item.active {
-        color: white;
-        background-color: #17a2b8;
-      }
+    &.tbc-primary > a.dropdown-item.active {
+      color: white;
+      background-color: #007bff;
+    }
 
-      &.tbc-success > a.dropdown-item.active {
-        color: white;
-        background-color: #28a745;
-      }
+    &.tbc-info > a.dropdown-item.active {
+      color: white;
+      background-color: #17a2b8;
+    }
 
-      &.tbc-warning > a.dropdown-item.active {
-        color: #212529;
-        background-color: #ffc107;
-      }
+    &.tbc-success > a.dropdown-item.active {
+      color: white;
+      background-color: #28a745;
+    }
 
-      &.tbc-danger > a.dropdown-item.active {
-        color: white;
-        background-color: #dc3545;
-      }
+    &.tbc-warning > a.dropdown-item.active {
+      color: #212529;
+      background-color: #ffc107;
+    }
 
-      &.tbc-secondary > a.dropdown-item.active {
-        color: white;
-        background-color: #6c757d;
-      }
+    &.tbc-danger > a.dropdown-item.active {
+      color: white;
+      background-color: #dc3545;
+    }
 
-      &.tbc-light > a.dropdown-item.active {
-        color: #212529;
-        background-color: #f8f9fa;
-      }
+    &.tbc-secondary > a.dropdown-item.active {
+      color: white;
+      background-color: #6c757d;
+    }
 
-      &.tbc-dark > a.dropdown-item.active {
-        color: white;
-        background-color: #343a40;
-      }
+    &.tbc-light > a.dropdown-item.active {
+      color: #212529;
+      background-color: #f8f9fa;
+    }
+
+    &.tbc-dark > a.dropdown-item.active {
+      color: white;
+      background-color: #343a40;
     }
   }
 
   // TODO: Unfocused Case
   &:not(.focused) {
     & > .editor { opacity: 0; }
-
-    & > span.display {
-      opacity: 1;
-
-      &::after { border-top-color: inherit !important; }
-    }
+    & > span.display::after { border-top-color: inherit !important; }
   }
 
   // TODO: Focused Case

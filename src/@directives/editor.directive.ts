@@ -1,6 +1,16 @@
 import { DirectiveOptions, VNodeDirective } from 'vue';
 
 
+// TODO: Auto Focus
+export const autofocus: DirectiveOptions = {
+  inserted(el: HTMLElement, binding: VNodeDirective) {
+    el.focus();
+
+    if (binding.value instanceof Function)
+      binding.value();
+  }
+};
+
 // TODO: For Dropdown List, it'll set focused when menu open.
 export const dropdown: DirectiveOptions = {
   inserted(el: HTMLElement, binding: VNodeDirective) {
@@ -10,7 +20,6 @@ export const dropdown: DirectiveOptions = {
     $(el).addClass('v-dropdown');
   }
 };
-
 
 // TODO: For Dropdown List, it'll not close when select any option.
 export const keepDropdown: DirectiveOptions = {

@@ -38,16 +38,15 @@ export const loading: DirectiveOptions = ((): DirectiveOptions => {
 export const theme: DirectiveOptions = ((): DirectiveOptions => {
   const rebinding = (el: HTMLElement, binding: VNodeDirective): void => {
     const { depth = true    } = binding.value || {};
-    const { color = 'light' } = binding.value || {};
     const { basic = false   } = binding.value || {};
-    const $target = basic ? $('body') : $(el);
+    const { color = 'light' } = binding.value || {};
 
-    if (Object.keys(Color).indexOf(color.toUpperCase()) < 0)
+    if (Object.keys(Color).indexOf((color || 'light').toUpperCase()) < 0)
       throw new Error(`Invalid theme option: ${binding.value}.`);
 
-    $target
+    (basic === true ? $('body') : $(el))
       .removeClass(['bright', 'light', ...Object.keys(Color).map(c => `tbc-${c.toLowerCase()}`)])
-      .addClass([depth ? 'bright' : 'light', `tbc-${color}`, 'tbc-theme']);
+      .addClass([depth ? 'bright' : 'light', `tbc-${color || 'light'}`, 'tbc-theme']);
   };
 
   return {

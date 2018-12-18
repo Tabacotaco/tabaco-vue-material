@@ -1,28 +1,30 @@
 <style lang="scss">
-  div.tabaco-field-group {
-    & > input.tabaco-numberfield {
+  div.tabaco-field-group.tabaco-numberfield {
+    &.disabled > div.tabaco-number-spinner > button.btn { cursor: not-allowed; }
+    & > input.editor, & > span.display { width: 100%; }
+    & > input.editor { padding-top: calc(.375rem - 1px) !important; }
+
+    & > .display {
+      cursor: text;
       text-align: right;
-      width: calc(100% - 28px);
-      padding-top: calc(.375rem - 1px) !important;
+    }
+
+    & input.editor {
+      text-align: right;
 
       &::-webkit-outer-spin-button,
       &::-webkit-inner-spin-button {
         -webkit-appearance: none !important;
       }
-
-      & + span.display {
-        text-align: right;
-        width: calc(100% - 58px);
-      }
-    }
-
-    &.disabled > div.tabaco-number-spinner > button.btn {
-      cursor: not-allowed;
     }
 
     & > div.tabaco-number-spinner {
       float: right;
       margin-top: 4px;
+
+      & + input.editor, & + span.display { width: calc(100% - 28px); }
+      & > button.btn:first-child { border-radius: 0 .25rem 0 0; }
+      & > button.btn:last-child { border-radius: 0 0 .25rem 0; }
 
       & > button.btn {
         line-height: 1;
@@ -30,29 +32,19 @@
         padding: .75px 8px;
         border-radius: 0 .25rem .25rem 0;
       }
+    }
 
-      & > button.btn:first-child {
-        border-radius: 0 .25rem 0 0;
-      }
-
-      & > button.btn:last-child {
-        border-radius: 0 0 .25rem 0;
-      }
+    & > div.modal.mb-stress {
+      & input.editor { width: calc(100% - 94px); margin: auto; }
+      & button.btn.plus { float: left; }
+      & button.btn.minus { float: right; }
     }
   }
 </style>
 
 <template>
-  <TabacoFieldGroup :empty="isEmpty()" :value="number" :options="{
-    def, sm, md, lg, xl,
-    color,
-    label,
-    disabled,
-    required,
-    format: overrideFormat
-  }">
-    <input slot="editor" slot-scope="{setFocused}"
-      type="number" class="tabaco-numberfield editor"
+  <TabacoFieldGroup v-model="number" :options="getGroupOpts({mainClass: 'tabaco-numberfield', format: overrideFormat})">
+    <input v-autofocus slot="editor" slot-scope="{setFocused}" type="number" class="editor"
       v-model="number" @focus="setFocused(true)" @blur="setFocused(false)" />
 
     <div slot="tool" slot-scope="{isFocused, setFocused}" class="tabaco-number-spinner btn-group-vertical">
@@ -66,19 +58,37 @@
         <i class="fa fa-caret-down" />
       </button>
     </div>
+
+    <template slot="mbstress">
+      <button type="button" class="btn plus btn-outline-light" @click="onSpinner(true)">
+        <i class="fa fa-plus" />
+      </button>
+
+      <input v-autofocus  type="number" class="editor" v-model="number" />
+
+      <button type="button" class="btn minus btn-outline-light" @click="onSpinner(false)">
+        <i class="fa fa-minus" />
+      </button>
+    </template>
   </TabacoFieldGroup>
 </template>
 
 <script lang="ts">
   import { Component, Prop } from 'vue-property-decorator';
+  import { autofocus } from '@/@directives/editor.directive';
+
   import Numeral from 'numeral';
 
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
   import TabacoFieldVue, { FormatType } from '@/@types/tabaco.field';
 
+
   type NullNumber = null | undefined;
 
   @Component({
+    directives: {
+      autofocus
+    },
     components: {
       TabacoFieldGroup
     }
