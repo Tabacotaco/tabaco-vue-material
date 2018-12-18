@@ -5,6 +5,8 @@
       width: calc(100% - 68px);
     }
 
+    &:not(.disabled) > span.display { cursor: default; }
+
     &:not(.disabled) > div.tabaco-switcher-btn {
       cursor: pointer;
     }

@@ -1,5 +1,7 @@
 <style lang="scss">
   div.tabaco-field-group.tabaco-combobox {
+    &:not(.disabled) > span.display { cursor: pointer; }
+
     & > div.editor {
       & > input.filter-text {
         display: block !important;

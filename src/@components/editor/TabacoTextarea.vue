@@ -5,8 +5,9 @@
       overflow-y: auto;
     }
 
+    &:not(.disabled) > span.display { cursor: text; }
+
     & > span.display {
-      cursor: text;
       overflow-y: auto;
       padding: .375rem .75rem !important;
     }

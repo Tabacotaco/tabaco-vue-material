@@ -3,11 +3,9 @@
     &.disabled > div.tabaco-number-spinner > button.btn { cursor: not-allowed; }
     & > input.editor, & > span.display { width: 100%; }
     & > input.editor { padding-top: calc(.375rem - 1px) !important; }
+    &:not(.disabled) > span.display { cursor: text; }
 
-    & > .display {
-      cursor: text;
-      text-align: right;
-    }
+    & > .display { text-align: right; }
 
     & input.editor {
       text-align: right;

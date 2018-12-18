@@ -5,9 +5,7 @@
       padding-top: calc(.375rem - 1px);
     }
 
-    & > .display {
-      cursor: text;
-    }
+    &:not(.disabled) > span.display { cursor: text; }
   }
 </style>
 

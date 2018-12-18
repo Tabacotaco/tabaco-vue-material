@@ -38,6 +38,7 @@
     & > div.mb-stress {
       & div.dropdown-menu {
         position: relative;
+        width: 80%;
         display: block;
       }
     }
@@ -90,24 +91,22 @@
       </div>
     </div>
 
-    <template slot="display" slot-scope="{format, setFocused}">
-      <span class="display" @click="setFocused(true)">
-        <ul class="nav nav-pills selected-options">
-          <li v-for="(dataModel, index) in option" :key="dataModel[valueField]" class="nav-item">
-            <a class="nav-link" :class="['bg-' + colorCode, selectedTextColor]">
-              <button type="button" class="close ml-2" :class="[selectedTextColor]" :disabled="disabled"
-                @click="disabled ? null : setSelected(dataModel)">
-                <span>&times;</span>
-              </button>
+    <span slot="display" slot-scope="{format, setFocused}" class="display" @click="onClickDisplay($event, setFocused)">
+      <ul class="nav nav-pills selected-options">
+        <li v-for="(dataModel, index) in option" :key="dataModel[valueField]" class="nav-item">
+          <a class="nav-link" :class="['bg-' + colorCode, selectedTextColor]">
+            <button type="button" class="close ml-2" :class="[selectedTextColor]" :disabled="disabled"
+              @click="disabled ? null : setSelected(dataModel)">
+              <span>&times;</span>
+            </button>
 
-              <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
-                {{displayFormat(dataModel)}}
-              </slot>
-            </a>
-          </li>
-        </ul>
-      </span>
-    </template>
+            <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
+              {{displayFormat(dataModel)}}
+            </slot>
+          </a>
+        </li>
+      </ul>
+    </span>
 
     <div slot="mbstress" class="dropdown-menu light" :class="[`tbc-${colorCode}`]">
       <a v-for="(dataModel, index) in datalist" :key="dataModel[valueField]"
@@ -133,6 +132,8 @@
 
   import { autofocus } from '@/@directives/editor.directive';
   import { dropdown, keepDropdown } from '@/@directives/editor.directive';
+  import { isMobileLayout } from '@/@types/tabaco.layout';
+
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
 
   import TabacoFieldVue, {
@@ -267,6 +268,16 @@
           400
         );
       }
+    }
+
+    onClickDisplay(e: Event, setFocused: (isFocused: boolean) => void): void {
+      const $target = $(e.target as Element);
+
+      if (isMobileLayout() && ($target.is('button.close') || $target.parent('button.close').length > 0)) {
+        e.preventDefault();
+        e.stopPropagation();
+      } else
+        setFocused(true);
     }
   }
 </script>
