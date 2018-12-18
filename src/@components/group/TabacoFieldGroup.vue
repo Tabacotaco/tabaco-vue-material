@@ -76,7 +76,7 @@
         }
 
         & > div.modal-body {
-          max-height: calc(100vh - 164px);
+          max-height: calc(100vh - 178px);
           overflow-y: auto;
         }
 
