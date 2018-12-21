@@ -161,7 +161,7 @@
     private allOptions: DataModelType[] = [];
     private selectedOptions: DataModelType[] = [];
     private hoverIndex: HoverCtrlType = null;
-    private delayID!: number;
+    private delayID!: any;
 
     @Prop() private valueField!: string;
     @Prop() private options!: RequestType<DataModelType> | Array<DataModelType>;

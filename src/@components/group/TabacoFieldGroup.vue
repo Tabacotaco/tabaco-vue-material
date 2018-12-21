@@ -6,6 +6,13 @@
 
     & > span.display {
       line-height: 1.5 !important;
+      white-space: nowrap; 
+      overflow-x: auto;
+      text-overflow: clip;
+    }
+
+    &:not(.tabaco-textarea) > span.display::-webkit-scrollbar {
+      display: none;
     }
 
     // TODO: Label
@@ -59,92 +66,37 @@
       &.theme-light     > label.tabaco-label { color: #f8f9fa; }
       &.theme-dark      > label.tabaco-label { color: #343a40; }
     }
-
-    & > div.modal.mb-stress {
-      background-color: rgba(0, 0, 0, .5);
-
-      & div.modal-content {
-        background: none;
-
-        & > div.modal-header {
-          border-width: 0;
-
-          & > h6 > sup.fa {
-            color: #dc3545;
-            font-size: 8px;
-          }
-        }
-
-        & > div.modal-body {
-          height: calc(100vh - 178px);
-          overflow-y: auto;
-          min-height: 110px;
-        }
-
-        & > div.modal-footer > div.btn-group {
-          width: 100%;
-
-          & > button.btn {
-            width: 50%;
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
-            border-color: rgba(255, 255, 255, .2);
-          }
-        }
-      }
-    }
   }
 </style>
 
 <template>
   <div class="tabaco-field-group" :class="groupCLS">
+    <!-- TODO: Label -->
     <label class="tabaco-label">
       <sup v-if="options.required === true" class="fa fa-asterisk" /> {{options.label}}
     </label>
 
+    <!-- TODO: Field Toolbar -->
     <slot v-if="!isMbStress" name="tool" :isFocused="focused" :setFocused="setFocused" />
 
+    <!-- TODO: Editor -->
     <slot v-if="editable && !isMbStress" name="editor" :isFocused="focused" :setFocused="setFocused" />
 
+    <!-- TODO: Display -->
     <slot v-if="!editable || isMbStress" name="display" :value="value" :format="options.format" :setFocused="setFocused">
-      <span class="display" v-html="options.empty() ? '' : options.format(value)" @click="setFocused(true)" :style="displayCSS" />
+      <span class="display" v-scroll-top="options.displayScrollTop" :style="displayCSS" @click="setFocused(true)"
+        v-html="options.empty() ? '' : options.format(value)" @scroll="$emit('display-scroll', $event.target.scrollTop)" />
     </slot>
 
+    <!-- TODO: Invalid Message -->
     <span class="tabaco-invalid-msg">
       <i v-if="isInvalid" class="fa fa-exclamation-circle" /> {{options.valid(value)}}
     </span>
 
-    <div v-if="isMbStress" ref="mbstress" class="modal mb-stress" @click="onCloseStress(BType.CANCEL, $event)">
-      <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-          <div class="modal-header tbc-theme bright" :class="stressCLS" :style="stressCSS">
-            <h6 class="modal-title tabaco-label">
-              <sup v-if="options.required === true" class="fa fa-asterisk" /> {{options.label}}
-            </h6>
-          </div>
-
-          <div class="modal-body text-white py-3">
-            <slot v-if="editable && isMbStress" name="mbstress" :oriValue="$data._value" />
-
-            <span v-if="isInvalid" class="tabaco-invalid-msg mt-3">
-              <h5><i class="fa fa-exclamation-circle" /> {{options.valid(value)}}</h5>
-            </span>
-          </div>
-
-          <div class="modal-footer p-0">
-            <div class="btn-group">
-              <button type="button" class="btn light" :class="stressBtnCLS" @click="onCloseStress(BType.CANCEL)">
-                <i class="fa fa-times" />
-              </button>
-
-              <button type="button" class="btn bright" :class="stressBtnCLS" @click="onCloseStress(BType.CONFIRM)">
-                <i class="fa fa-check" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- TODO: Mobidle Stress Editor Modal -->
+    <MbStressField v-if="isMbStress" ref="mbstress" :value="value" :options="options" :editable="editable" @close="onCloseMbStress($event)">
+      <slot name="mbstress" />
+    </MbStressField>
   </div>
 </template>
 
@@ -153,16 +105,23 @@
 
   import { Color, ColumnSize, SizeType, isMobileLayout, getColorCode } from '@/@types/tabaco.layout';
   import { IGroupOptions, FormatType, ValidType } from '@/@types/tabaco.field';
-  import { ButtonType } from '@/@types/tabaco.msg';
+  import { Button } from '@/@types/tabaco.popup';
+  import { scrollTop } from '@/@directives/editor.directive';
+
+  import MbStressField from '@/@components/tool/MbStressField.vue';
 
 
-  type GroupData = {
-    _focused: boolean;
-    _value: any;
-    _stressBtn?: ButtonType;
-  };
-
-  @Component
+  @Component({
+    inject: {
+      Button: {default: Button}
+    },
+    directives: {
+      scrollTop
+    },
+    components: {
+      MbStressField
+    }
+  })
   export default class TabacoFieldGroup extends Vue {
     static convert2CNumbers(code: string): number[] {
       const color = getComputedStyle(document.body).getPropertyValue(`--${code}`).replace('#', '');
@@ -176,16 +135,14 @@
 
     private columnSize: ColumnSize | undefined;
     private invalidMsg = '';
-    private BType = ButtonType;
+
+    focused = false;
+    oriValue: any = null;
 
     @Prop() private value!: any;
     @Prop() private options!: IGroupOptions<any>;
 
-    set focused(value: boolean) { this.$data._focused = value; }
-
-    get focused(): boolean { return this.$data._focused; }
-
-    get editable(): boolean { return this.options.disabled === false && this.focused; }
+    get editable(): boolean { return this.options.disabled !== true && this.focused; }
 
     get isMbStress(): boolean { return isMobileLayout() && 'mbstress' in this.$slots; }
 
@@ -199,21 +156,6 @@
       return 'number' !== typeof this.options.displayHeight || isNaN(this.options.displayHeight) ? {} : {
         height: `${this.options.displayHeight}px`
       };
-    }
-
-    get stressCSS(): any {
-      return {'background-color': `rgba(${[
-        TabacoFieldGroup.convert2CNumbers(getColorCode(this.options.color))
-      ]}, .7) !important`};
-    }
-
-    get stressBtnCLS(): string[] { return [`tbc-${getColorCode(this.options.color)}`] }
-
-    get stressCLS(): string[] {
-      return [
-        `tbc-${getColorCode(this.options.color)}`,
-        `text-${'light' === getColorCode(this.options.color) ? 'dark' : 'white'}`
-      ];
     }
 
     get groupCLS(): string[] {
@@ -230,44 +172,20 @@
       ];
     }
 
-    data(): GroupData { return {_focused: false, _value: null}; }
-
-    mounted(): void {
-      $(this.$refs.mbstress)
-        .on('show.bs.modal'   , () => this.$data._value = this.value)
-        .on('hide.bs.modal'   , () => ButtonType.CANCEL === this.$data._stressBtn || !this.isInvalid)
-        .on('hidden.bs.modal' , () => {
-          switch (this.$data._stressBtn) {
-          case ButtonType.CANCEL:
-            this.$emit('input', this.$data._value);
-          default:
-            this.$data._stressBtn = undefined;
-          }
-          this.setFocused(false);
-        });
-    }
-
     setFocused(isFocused: boolean): void {
-      if (!isFocused || this.options.disabled !== false) {
+      if (!isFocused || this.options.disabled === true) {
         this.focused = false;
         return;
       } else if (isMobileLayout())
-        ($(this.$refs.mbstress) as any).modal('show');
+        ($((this.$refs.mbstress as any).$el) as any).modal('show');
 
       this.focused = true;
       this.$el.scrollIntoView();
     }
 
-    onCloseStress(btn: ButtonType, e?: Event): void {
-      if (e && this.$refs.mbstress === e.target) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-
-      if (!e || this.$refs.mbstress === e.target) {
-        this.$data._stressBtn = btn;
-        ($(this.$refs.mbstress) as any).modal('hide');
-      }
+    onCloseMbStress(value?: any): void {
+      this.$emit('input', value);
+      this.setFocused(false);
     }
   }
 </script>

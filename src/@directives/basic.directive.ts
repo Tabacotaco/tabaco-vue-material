@@ -1,7 +1,8 @@
-import { DirectiveOptions, VNodeDirective } from 'vue';
+import { Vue } from 'vue-property-decorator';
+import { DirectiveOptions, VNodeDirective, VNode, CreateElement } from 'vue';
 
 import { Color } from '@/@types/tabaco.layout';
-import { TbcSnackbar, TbcDialog } from '@/@types/tabaco.msg';
+import { TbcSnackbar, TbcDialog } from '@/@types/tabaco.popup';
 
 import TabacoSnackbar from '@/@components/tool/Snackbar.vue';
 import TabacoDialog from '@/@components/tool/Dialog.vue';
@@ -66,13 +67,13 @@ export const theme: DirectiveOptions = ((): DirectiveOptions => {
   *     1. delay: number, Snackbar would be closed voluntarily after this specify millisecond (default: 5000).
   *     2. position: string, set the fixed position of Snackbar by SnackbarPosition (default: SnackbarPosition.BOTTOM).
   */
-export const snackbar = new TbcSnackbar((tbcSnackbar) => ({
-  inserted : (el: HTMLElement, binding: VNodeDirective): void => tbcSnackbar.binding(TabacoSnackbar, el, binding)
+export const snackbar = new TbcSnackbar(tbcSnackbar => ({
+  inserted : (el: HTMLElement, binding: VNodeDirective): void => tbcSnackbar.createPopupVue(TabacoSnackbar, {el, binding})
 }));
 
 
 /** TODO: Dialog
   */
-export const dialog = new TbcDialog((tbcDialog) => ({
-  inserted : (el: HTMLElement, binding: VNodeDirective): void => tbcDialog.binding(TabacoDialog, el, binding)
+export const dialog = new TbcDialog(tbcDialog => ({
+  inserted : (el: HTMLElement, binding: VNodeDirective): void => tbcDialog.createPopupVue(TabacoDialog, {el, binding})
 }));

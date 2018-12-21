@@ -100,7 +100,7 @@
     private allOptions: DataModelType[] = [];
     private selectedOption: DataModelType | null = null;
     private hoverIndex: HoverCtrlType = null;
-    private delayID!: number;
+    private delayID!: any;
 
     @Prop() private valueField!: string;
     @Prop() private options!: RequestType<DataModelType> | Array<DataModelType>;
@@ -109,6 +109,7 @@
 
     set option(v: DataModelType | null) {
       this.selectedOption = v;
+      this.filterText     = this.selectedDisplay;
 
       this.$emit('input', v === null ? null : (v as any)[this.valueField]);
       this.$emit(this.selectedOption === null ? 'disselected' : 'selected', this.selectedOption);
@@ -182,7 +183,6 @@
     setSelected(dataModel: DataModelType): void {
       this.hoverIndex = null;
       this.option     = dataModel;
-      this.filterText = this.selectedDisplay;
     }
 
     onAutofocus(): void {

@@ -66,7 +66,7 @@
       </div>
     </div>
 
-    <DialogContent ref="content">
+    <Dialog ref="comment" :color="themeColor" title="Dialog with HTML content">
       Hello, {{textValue}}. <br/><br/>
       This content could be defined by as follows:
       <ul>
@@ -74,18 +74,18 @@
         <li>Defined elements in DialogContent Component, and set into the dialog by $refs.</li>
       </ul>
 
-      <TabacoTextarea label="Comments" :color="modalFieldColor" :required="true" v-model="comments" :rows="3" />
-    </DialogContent>
+      <TabacoTextarea label="Comments" :required="true" :color="modalFieldColor" v-model="comments" :rows="3" />
+    </Dialog>
+
+    {{Button.CANCEL}}
   </div>
 </template>
 
 <script lang="ts">
-  import { Component, Vue } from 'vue-property-decorator';
+  import { Component, Vue, Provide } from 'vue-property-decorator';
 
-  import { ButtonType, SnackbarPosition } from '@/@types/tabaco.msg.ts';
+  import { Button, SnbPosition } from '@/@types/tabaco.popup.ts';
   import { theme, loading, snackbar, dialog } from '@/@directives/basic.directive';
-
-  import DialogContent from '@/@components/tool/DialogContent.vue';
 
   import TabacoTextfield from '@/@components/editor/TabacoTextfield.vue';
   import TabacoTextarea from '@/@components/editor/TabacoTextarea.vue';
@@ -93,6 +93,8 @@
   import TabacoCombobox from '@/@components/editor/TabacoCombobox.vue';
   import TabacoMultiCombobox from '@/@components/editor/TabacoMultiCombobox.vue';
   import TabacoSwitcher from '@/@components/editor/TabacoSwitcher.vue';
+
+  import Dialog from '@/@components/tool/Dialog.vue';
 
 
   interface IComboBoxModel {
@@ -106,6 +108,9 @@
   }
 
   @Component({
+    inject: {
+      Button: {default: Button}
+    },
     directives: {
       theme,      // 基礎色調 - 僅需設置於頂層 Element
       snackbar,   // 對話框 1 - 僅需設置於頂層 Element
@@ -116,12 +121,12 @@
       TabacoTextfield   , TabacoTextarea      ,
       TabacoNumberfield , TabacoSwitcher      ,
       TabacoCombobox    , TabacoMultiCombobox ,
-      DialogContent
+      Dialog
     }
   })
   export default class App extends Vue {
-    private delayID!: number;
-    private snackbarPosition = SnackbarPosition.TOP_LEFT;
+    private delayID!: any;
+    private snackbarPosition = SnbPosition.TOP_LEFT;
 
     private themeColor  = 'info';
     private mainColor   = 'dark';
@@ -196,32 +201,19 @@
     }
 
     showDialog(): void {
-      switch (this.themeColor) {
-      case 'primary'   : dialog.primary   ('Dialog Example', this.$refs.content); break;
-      case 'info'      : dialog.info      ('Dialog Example', this.$refs.content); break;
-      case 'success'   : dialog.success   ('Dialog Example', this.$refs.content); break;
-      case 'warning'   : dialog.warning   ('Dialog Example', this.$refs.content); break;
-      case 'danger'    : dialog.danger    ('Dialog Example', this.$refs.content); break;
-      case 'dark'      : dialog.dark      ('Dialog Example', this.$refs.content); break;
-      case 'light'     :
-        dialog.light('Dialog Example', this.$refs.content).then(btn =>
-          btn === ButtonType.CANCEL || 'string' === typeof this.comments && this.comments.trim().length > 0
-        ).finally(btn => {
-          if (btn === ButtonType.CONFIRM)
-            dialog.light('Finally Example', `Your comments: ${this.comments}`);
+      dialog.open(this.$refs.comment as Vue);
 
-          this.comments = '';
-        });
-        break;
-      case 'secondary' :
-        dialog.secondary('Dialog Example', this.$refs.content, [{
-          type: ButtonType.CONFIRM,
-          icon: 'fa fa-check',
-          text: 'Click to close'
-        }]).then(btn => btn === ButtonType.CONFIRM);
-        
-        break;
-      }
+
+      // (dialog as any)[this.themeColor]('Dialog Example', 'test');
+
+      // (dialog as any)[this.themeColor]('Dialog Example', this.$refs.comment).then((btn: ButtonType) =>
+      //   btn === ButtonType.CANCEL || 'string' === typeof this.comments && this.comments.trim().length > 0
+      // ).finally((btn: ButtonType) => {
+      //   if (btn === ButtonType.CONFIRM)
+      //     dialog.light('Finally Example', `Your comments: ${this.comments}`);
+
+      //   this.comments = '';
+      // });
     }
   }
 </script>

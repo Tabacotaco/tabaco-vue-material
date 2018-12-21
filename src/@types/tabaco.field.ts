@@ -57,4 +57,5 @@ export interface IGroupOptions<T> {
   format?        : FormatType<T>;    xl?    : SizeType;
   mainClass?     : string;           empty? : () => boolean;
   displayHeight? : number;           valid? : ValidType<T>;
+  displayScrollTop? : number;
 };

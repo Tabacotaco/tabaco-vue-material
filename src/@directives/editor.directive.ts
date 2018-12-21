@@ -1,4 +1,5 @@
-import { DirectiveOptions, VNodeDirective } from 'vue';
+import { DirectiveOptions, VNodeDirective, VNode } from 'vue';
+import uuidv4 from 'uuid/v4';
 
 
 // TODO: Auto Focus
@@ -8,6 +9,40 @@ export const autofocus: DirectiveOptions = {
 
     if (binding.value instanceof Function)
       binding.value();
+  }
+};
+
+export const scrollTop: DirectiveOptions = ((): DirectiveOptions => {
+  const fns: {[key in string] : () => void} = {};
+
+  return {
+    bind(el: HTMLElement, binding: VNodeDirective, vnode: VNode) {
+      const uuid = uuidv4();
+
+      fns[uuid] = () => (vnode.context as any)[binding.expression] = el.scrollTop;
+      $(el).attr('data-scroll-top', uuid)[0].addEventListener('scroll', fns[uuid]);
+    },
+
+    inserted(el: HTMLElement, binding: VNodeDirective) {
+      el.scrollTop = binding.value || 0;
+    },
+
+    update(el: HTMLElement, binding: VNodeDirective) {
+      el.scrollTop = binding.value || 0;
+    },
+
+    unbind(el: HTMLElement) {
+      const uuid = $(el).attr('data-scroll-top');
+
+      el.removeEventListener('scroll', fns[uuid as string]);
+      delete fns[uuid as string];
+    }
+  }
+})();
+
+export const scrollTopSync: DirectiveOptions = {
+  inserted(el: HTMLElement, binding: VNodeDirective, vnode: VNode) {
+    console.log(binding, vnode);
   }
 };
 

@@ -66,7 +66,7 @@
     }
   })
   export default class TabacoSwitcher extends TabacoFieldVue {
-    private delayID!: number;
+    private delayID!: any;
 
     @Prop() value!: boolean;
 
