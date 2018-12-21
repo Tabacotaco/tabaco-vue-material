@@ -29,9 +29,8 @@
           </button>
         </div>
 
-        <div class="modal-body">
-          <slot />
-        </div>
+        <div v-if="'string' === typeof content" class="modal-body">{{content}}</div>
+        <div v-else class="modal-body"><slot /></div>
 
         <div class="modal-footer p-0">
           <div class="btn-group">

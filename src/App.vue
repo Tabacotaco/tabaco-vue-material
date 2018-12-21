@@ -56,17 +56,21 @@
           <i class="fa fa-spinner" /><br/> Loading
         </button>
 
-        <button type="button" class="btn btn-light" :class="[isSnackbarValid ? '' : 'disabled']" :disabled="!isSnackbarValid" @click="showSnackbar()">
+        <button type="button" class="btn btn-light" :class="[isPopupValid ? '' : 'disabled']" :disabled="!isPopupValid" @click="showSnackbar()">
           <i class="fa fa-comment" /><br/> Snackbar
         </button>
 
-        <button type="button" class="btn btn-secondary" :class="[isDialogValid ? '' : 'disabled']" :disabled="!isDialogValid" @click="showDialog()">
+        <button type="button" class="btn btn-secondary" @click="dialog.open($refs.comment)">
           <i class="fa fa-commenting" /><br/> Dialog
+        </button>
+
+        <button type="button" class="btn btn-light" :class="[isPopupValid ? '' : 'disabled']" :disabled="!isPopupValid" @click="showDialog()">
+          <i class="fa fa-comment" /><br/> Dialog
         </button>
       </div>
     </div>
 
-    <Dialog ref="comment" :color="themeColor" title="Dialog with HTML content">
+    <Dialog ref="comment" :color="themeColor" title="Dialog (HTML Content)">
       Hello, {{textValue}}. <br/><br/>
       This content could be defined by as follows:
       <ul>
@@ -109,7 +113,8 @@
 
   @Component({
     inject: {
-      Button: {default: Button}
+      Button: {default: Button},
+      dialog: {default: dialog}
     },
     directives: {
       theme,      // 基礎色調 - 僅需設置於頂層 Element
@@ -155,12 +160,8 @@
       {code: 'G100' , fullName: 'Nicholas' }, {code: 'Q203' , fullName: 'Mami'    }
     ];
 
-    get isSnackbarValid(): boolean {
+    get isPopupValid(): boolean {
       return 'string' === typeof this.multiText && this.multiText.trim().length > 0;
-    }
-
-    get isDialogValid(): boolean {
-      return 'string' === typeof this.textValue && this.textValue.trim().length > 0;
     }
 
     get mainTheme(): string {
@@ -201,19 +202,16 @@
     }
 
     showDialog(): void {
-      dialog.open(this.$refs.comment as Vue);
-
-
-      // (dialog as any)[this.themeColor]('Dialog Example', 'test');
-
-      // (dialog as any)[this.themeColor]('Dialog Example', this.$refs.comment).then((btn: ButtonType) =>
-      //   btn === ButtonType.CANCEL || 'string' === typeof this.comments && this.comments.trim().length > 0
-      // ).finally((btn: ButtonType) => {
-      //   if (btn === ButtonType.CONFIRM)
-      //     dialog.light('Finally Example', `Your comments: ${this.comments}`);
-
-      //   this.comments = '';
-      // });
+      switch (this.themeColor) {
+      case 'primary'   : dialog.primary   ('Dialog (Text Content)', this.multiText); break;
+      case 'info'      : dialog.info      ('Dialog (Text Content)', this.multiText); break;
+      case 'success'   : dialog.success   ('Dialog (Text Content)', this.multiText); break;
+      case 'warning'   : dialog.warning   ('Dialog (Text Content)', this.multiText); break;
+      case 'danger'    : dialog.danger    ('Dialog (Text Content)', this.multiText); break;
+      case 'dark'      : dialog.dark      ('Dialog (Text Content)', this.multiText); break;
+      case 'light'     : dialog.light     ('Dialog (Text Content)', this.multiText); break;
+      case 'secondary' : dialog.secondary ('Dialog (Text Content)', this.multiText); break;
+      }
     }
   }
 </script>

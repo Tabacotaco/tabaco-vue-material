@@ -128,14 +128,14 @@ abstract class PopupRemoteDirective<V extends Vue, Options> implements Directive
     }
   }
 
-  primary   (title: string, content: string, options?: Options) { return this.show(Color.PRIMARY, title, content, options); }
-  info      (title: string, content: string, options?: Options) { return this.show(Color.PRIMARY, title, content, options); }
-  success   (title: string, content: string, options?: Options) { return this.show(Color.PRIMARY, title, content, options); }
-  warning   (title: string, content: string, options?: Options) { return this.show(Color.PRIMARY, title, content, options); }
-  danger    (title: string, content: string, options?: Options) { return this.show(Color.PRIMARY, title, content, options); }
-  secondary (title: string, content: string, options?: Options) { return this.show(Color.PRIMARY, title, content, options); }
-  light     (title: string, content: string, options?: Options) { return this.show(Color.PRIMARY, title, content, options); }
-  dark      (title: string, content: string, options?: Options) { return this.show(Color.PRIMARY, title, content, options); }
+  primary   (title: string, content: string, options?: Options) { return this.show(Color.PRIMARY   , title, content, options); }
+  info      (title: string, content: string, options?: Options) { return this.show(Color.INFO      , title, content, options); }
+  success   (title: string, content: string, options?: Options) { return this.show(Color.SUCCESS   , title, content, options); }
+  warning   (title: string, content: string, options?: Options) { return this.show(Color.WARNING   , title, content, options); }
+  danger    (title: string, content: string, options?: Options) { return this.show(Color.DANGER    , title, content, options); }
+  secondary (title: string, content: string, options?: Options) { return this.show(Color.SECONDARY , title, content, options); }
+  light     (title: string, content: string, options?: Options) { return this.show(Color.LIGHT     , title, content, options); }
+  dark      (title: string, content: string, options?: Options) { return this.show(Color.DARK      , title, content, options); }
 
   private show(color: Color, title: string, content: string, options?: Options): LongPromise<PopupResult> {
     const component = this.component as any as PopupVue;
@@ -156,9 +156,9 @@ class TbcSnackbar<V extends Vue> extends PopupRemoteDirective<V, IButtonOpts> {
   constructor(
     directiveOpts: ((popupRemote: PopupRemoteDirective<V, IButtonOpts>) => DirectiveOptions)
   ) {
-    super(directiveOpts, (component: V, btn?: IButtonOpts) => {
-      component.$props.btns = btn ? [btn] : (component as any as PopupVue).defaultBtns;
-    });
+    super(directiveOpts, (component: V, btn?: IButtonOpts) =>
+      component.$props.btns = btn ? [btn] : (component as any as PopupVue).defaultBtns
+    );
   }
 
   generate(
@@ -188,9 +188,9 @@ class TbcDialog<V extends Vue> extends PopupRemoteDirective<V, IButtonOpts[]> {
   constructor(
     directiveOpts: ((popupRemote: PopupRemoteDirective<V, IButtonOpts[]>) => DirectiveOptions)
   ) {
-    super(directiveOpts, (component: V, btns: IButtonOpts[] = (component as any as PopupVue).defaultBtns) => {
-      component.$props.btns = btns;
-    });
+    super(directiveOpts, (component: V, btns: IButtonOpts[] = (component as any as PopupVue).defaultBtns) =>
+      component.$props.btns = btns
+    );
   }
   
   generate(
