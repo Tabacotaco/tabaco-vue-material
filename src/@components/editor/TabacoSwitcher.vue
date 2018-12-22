@@ -3,6 +3,11 @@
     & > span.editor,
     & > span.display {
       width: calc(100% - 68px);
+      user-select: none;
+      -moz-user-select: none;
+      -khtml-user-select: none;
+      -webkit-user-select: none;
+      -o-user-select: none;
     }
 
     &:not(.disabled) > span.display { cursor: default; }
@@ -97,18 +102,5 @@
         }, 500);
       });
     }
-
-    // setTurnOn(setFocused: ((isFocused: boolean) => void)): void {
-    //   clearTimeout(this.delayID);
-
-    //   this.turnOn = !this.turnOn;
-    //   setFocused(true);
-
-    //   this.delayID = setTimeout(() => {
-    //     setFocused(false);
-
-    //     clearTimeout(this.delayID);
-    //   }, 500);
-    // }
   }
 </script>

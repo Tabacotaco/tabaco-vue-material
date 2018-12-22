@@ -3,32 +3,37 @@
     background-color: rgba(0, 0, 0, .5);
     height: 100vh;
 
-    & div.modal-content {
-      background: none;
+    & > div.modal-dialog {
+      margin-top: 8px;
+      margin-bottom: 8px;
 
-      & > div.modal-header {
-        border-width: 0;
+      & > div.modal-content {
+        background: none;
 
-        & > h6 > sup.fa {
-          color: #dc3545;
-          font-size: 8px;
+        & > div.modal-header {
+          border-width: 0;
+
+          & > h6 > sup.fa {
+            color: #dc3545;
+            font-size: 8px;
+          }
         }
-      }
 
-      & > div.modal-body {
-        height: calc(100vh - 178px);
-        overflow-y: auto;
-        min-height: 110px;
-      }
+        & > div.modal-body {
+          height: calc(100vh - 112px);
+          overflow-y: auto;
+          min-height: 110px;
+        }
 
-      & > div.modal-footer > div.btn-group {
-        width: 100%;
+        & > div.modal-footer > div.btn-group {
+          width: 100%;
 
-        & > button.btn {
-          width: 50%;
-          border-top-left-radius: 0;
-          border-top-right-radius: 0;
-          border-color: rgba(255, 255, 255, .2);
+          & > button.btn {
+            width: 50%;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-color: rgba(255, 255, 255, .2);
+          }
         }
       }
     }
@@ -37,7 +42,7 @@
 
 <template>
   <div ref="mbstress" class="modal mb-stress" @click="onCloseStress(Button.CANCEL, $event)">
-    <div class="modal-dialog">
+    <div v-if="focused === true" class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header tbc-theme bright" :class="stressCLS" :style="stressCSS">
           <h6 class="modal-title tabaco-label">
@@ -53,7 +58,7 @@
           </span>
         </div>
 
-        <div class="modal-footer p-0">
+        <div class="modal-footer p-0 border-0">
           <div class="btn-group">
             <button type="button" class="btn light" :class="stressBtnCLS" @click="onCloseStress(Button.CANCEL)">
               <i class="fa fa-times" />
@@ -95,6 +100,7 @@
     oriValue: any = null;
     finalBtn: Button | null = null;
 
+    @Prop() private focused!: boolean;
     @Prop() private editable!: boolean;
     @Prop() private value!: any;
     @Prop() private options!: IGroupOptions<any>;

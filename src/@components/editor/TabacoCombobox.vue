@@ -11,12 +11,19 @@
     }
 
     & > div.mb-stress {
-      & div.dropdown-menu {
-        position: static;
-        display: block;
-        float: none;
-        margin: auto;
-        width: 80%;
+      & div.modal-body {
+        display:flex;
+        align-items:center;
+        justify-content:center;
+
+        & > div.dropdown-menu {
+          position: static;
+          display: block;
+          float: none;
+          margin: auto;
+          width: 80%;
+          line-height: 1.8;
+        }
       }
     }
   }

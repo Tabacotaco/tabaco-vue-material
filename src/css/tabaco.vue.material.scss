@@ -280,15 +280,11 @@ div.tabaco-field-group {
 
   // TODO: Unfocused Case
   &:not(.focused) {
-    & > .editor { opacity: 0; }
     & > span.display::after { border-top-color: inherit !important; }
   }
 
   // TODO: Focused Case
   &.focused {
-    & > span.display { opacity: 0; }
-    & > .editor { opacity: 1; }
-
     &.theme-primary > .editor {
       border-bottom-color: #007bff;
       animation: tabaco-border-highlight-primary .1s;

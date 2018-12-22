@@ -19,7 +19,7 @@
 
 <template>
   <div ref="mask" class="tabaco-msg modal" :class="mainCLS" @click="closeByMask($event)">
-    <div class="modal-dialog">
+    <div v-if="isShown === true" class="modal-dialog">
       <div class="modal-content tbc-theme bright" :class="[`tbc-${colorCode}`]">
         <div class="modal-header">
           <h5 class="modal-title">{{title}}</h5>
@@ -64,6 +64,7 @@
     @Prop({default: () => defaultBtns}) btns!: IButtonOpts[];
 
     closable    = true;
+    isShown     = false;
     defaultBtns = defaultBtns;
 
     get mainCLS(): string[] {
@@ -80,6 +81,7 @@
 
     mounted(): void {
       $(this.$el)
+        .on('show.bs.modal'   , () => this.isShown = true)
         .on('hide.bs.modal'   , () => this.closable !== false)
         .on('hidden.bs.modal' , () => LongPromise.finally(this.closingPromise));
     }
@@ -98,6 +100,7 @@
     hide(btn: Button = Button.CANCEL): void {
       LongPromise.execute(btn, this.closingPromise).then(res => {
         this.closable = res !== false;
+        this.isShown  = false;
         ($(this.$el) as any).modal('hide');
       });
     }

@@ -94,7 +94,7 @@
     </span>
 
     <!-- TODO: Mobidle Stress Editor Modal -->
-    <MbStressField v-if="isMbStress" ref="mbstress" :value="value" :options="options" :editable="editable" @close="onCloseMbStress($event)">
+    <MbStressField v-if="isMbStress" ref="mbstress" :focused="focused" :value="value" :options="options" :editable="editable" @close="onCloseMbStress($event)">
       <slot name="mbstress" />
     </MbStressField>
   </div>
@@ -162,7 +162,7 @@
       const { def, sm, md, lg, xl } = this.options;
       const { mainClass = '', disabled, empty = (() => true) } = this.options;
       const { focused = false } = this;
-      const labels = {empty: empty(), focused: focused && !isMobileLayout(), disabled};
+      const labels = {empty: empty(), focused: focused && !this.isMbStress, disabled};
 
       return [
         mainClass,
@@ -176,7 +176,7 @@
       if (!isFocused || this.options.disabled === true) {
         this.focused = false;
         return;
-      } else if (isMobileLayout())
+      } else if (isMobileLayout() && this.isMbStress)
         ($((this.$refs.mbstress as any).$el) as any).modal('show');
 
       this.focused = true;
