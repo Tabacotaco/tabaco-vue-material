@@ -80,8 +80,6 @@
 
       <TabacoTextarea label="Comments" :required="true" :color="modalFieldColor" v-model="comments" :rows="3" />
     </Dialog>
-
-    {{Button.CANCEL}}
   </div>
 </template>
 

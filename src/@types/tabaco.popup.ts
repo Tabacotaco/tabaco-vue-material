@@ -32,8 +32,6 @@ interface IPopupRemote<Options> {
   dark      : (title: string, content: string, options?: Options) => LongPromise<PopupResult>;
 }
 
-type DialogContent<V extends Vue> = string | V;
-
 type PopupResult = Button | false | void;
 
 class LongPromise<T> {
@@ -213,8 +211,11 @@ class TbcDialog<V extends Vue> extends PopupRemoteDirective<V, IButtonOpts[]> {
     });
   }
 
-  open(dialogVue: V): LongPromise<PopupResult> {
-    return (dialogVue as any as PopupVue).show();
+  open(dialogVue: Vue | Element | Vue[] | Element[]): LongPromise<PopupResult> {
+    if (!(dialogVue instanceof PopupVue)) throw new Error(
+      'The open target is not a component of <Dialog />.'
+    );
+    return dialogVue.show();
   }
 }
 
