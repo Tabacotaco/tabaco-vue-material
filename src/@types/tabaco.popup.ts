@@ -175,7 +175,7 @@ class TbcSnackbar<V extends Vue> extends PopupRemoteDirective<V, IButtonOpts> {
 
     return new PopupComponent({
       el        : $(`<div class="${mainCLS}" />`).appendTo($body)[0],
-      propsData : directiveParams.binding
+      propsData : (directiveParams.binding || {value: {}}).value
     });
   }
 }
@@ -191,10 +191,7 @@ class TbcDialog<V extends Vue> extends PopupRemoteDirective<V, IButtonOpts[]> {
     );
   }
   
-  generate(
-    PopupComponent: (new (options: ComponentOptions<V>) => V),
-    directiveParams: IDirectiveParams
-  ): V {
+  generate(PopupComponent: (new (options: ComponentOptions<V>) => V)): V {
     const $body = $('body');
     const mainCLS: string = (PopupComponent as any).MAIN_CLASS;
 
@@ -206,8 +203,7 @@ class TbcDialog<V extends Vue> extends PopupRemoteDirective<V, IButtonOpts[]> {
     $body.find(` > div.${mainCLS}`).remove();
 
     return new PopupComponent({
-      el        : $(`<div class="${mainCLS}" />`).appendTo($body)[0],
-      propsData : directiveParams.binding
+      el: $(`<div class="${mainCLS}" />`).appendTo($body)[0]
     });
   }
 

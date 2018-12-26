@@ -2,88 +2,56 @@
   div.tabaco-field-group.tabaco-combobox {
     &:not(.disabled) > span.display { cursor: pointer; }
 
-    & > div.editor {
-      & > input.filter-text {
-        display: block !important;
-        width: 100%;
-        padding-right: 18px;
-      }
-    }
-
-    & > div.mb-stress {
-      & div.modal-body {
-        display:flex;
-        align-items:center;
-        justify-content:center;
-
-        & > div.dropdown-menu {
-          position: static;
-          display: block;
-          float: none;
-          margin: auto;
-          width: 80%;
-          line-height: 1.8;
-        }
-      }
+    & > div.editor > input.filter-text {
+      display: block !important;
+      width: 100%;
+      padding-right: 18px;
     }
   }
 </style>
 
 <template>
-  <TabacoFieldGroup v-model="option" :options="getGroupOpts({mainClass: 'tabaco-combobox', format: displayFormat})">
-    <div slot="editor" slot-scope="{setFocused}" class="dropdown editor">
-      <input ref="toggle" v-autofocus="onAutofocus" v-dropdown="setFocused"
-        type="text" class="filter-text" data-toggle="dropdown" v-model="filterText"
+  <TabacoFieldGroup v-model="option" :options="getGroupOpts({
+    mainClass    : 'tabaco-combobox dd-group',
+    displayClass : 'tbc-dropdown',
+    format       : displayFormat
+  })">
+    <div slot="editor" slot-scope="{setFocused}" class="dropdown editor tbc-dropdown" v-dropdown="setFocused">
+      <input ref="toggle" v-autofocus="() => $($refs.toggle).dropdown('toggle')" v-dropdown-toggle="true"
+        type="text" class="filter-text" v-model="filterText"
         @input="onTextfieldInput()"
-        @keyup.up="setOptionHover(hoverIndex === null ? -1 : (hoverIndex - 1))"
-        @keyup.down="setOptionHover(hoverIndex === null ? 0 : (hoverIndex + 1))"
-        @keyup.enter="hoverIndex === null? null : setSelected(datalist[hoverIndex])"
+        @keyup.up="hoverAt = getDefaultHoverAt(0) - 1"
+        @keyup.down="hoverAt = getDefaultHoverAt(-1) + 1"
+        @keyup.enter="hoverAt === null? null : setSelected(datalist[hoverAt])"
         @blur="onFilterTextBlur()" />
 
-      <div ref="menu" class="dropdown-menu light" :class="[`tbc-${colorCode}`]">
-        <a v-for="(dataModel, index) in datalist" :key="dataModel[valueField]"
-          class="dropdown-item" :class="{hover: hoverIndex === index, active: value === dataModel[valueField]}"
-          @click="setSelected(dataModel)"
-          @mouseover="setOptionHover(index)"
-          @mouseout="setOptionHover()">
-
+      <DropdownMenu :hoverAt.sync="hoverAt" :color="color" :list="datalist" :actived="d => value === d[valueField]" @click="setSelected($event)">
+        <template slot="option" slot-scope="{dataModel, index}">
           <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
             {{displayFormat(dataModel)}}
           </slot>
-        </a>
-
-        <a v-if="datalist.length === 0" class="dropdown-item disabled text-center text-secondary">
-          Data Not Found
-        </a>
-      </div>
+        </template>
+      </DropdownMenu>
     </div>
 
-    <div slot="mbstress" class="dropdown-menu light" :class="[`tbc-${colorCode}`]">
-      <a v-for="(dataModel, index) in datalist" :key="dataModel[valueField]"
-        class="dropdown-item" :class="{hover: hoverIndex === index, active: value === dataModel[valueField]}"
-        @click="setSelected(dataModel)"
-        @mouseover="setOptionHover(index)"
-        @mouseout="setOptionHover()">
-
+    <DropdownMenu slot="mbstress" :offset="false" :color="color" :list="datalist" :hoverAt.sync="hoverAt"
+      :actived="d => value === d[valueField]" @click="setSelected($event)">
+      <template slot="option" slot-scope="{dataModel, index}">
         <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
           {{displayFormat(dataModel)}}
         </slot>
-      </a>
-
-      <a v-if="datalist.length === 0" class="dropdown-item disabled text-center text-secondary">
-        Data Not Found
-      </a>
-    </div>
+      </template>
+    </DropdownMenu>
   </TabacoFieldGroup>
 </template>
 
 <script lang="ts">
-  import { DirectiveOptions, VNodeDirective, VNode } from 'vue';
   import { Component, Prop } from 'vue-property-decorator';
 
-  import { autofocus } from '@/@directives/editor.directive';
-  import { dropdown } from '@/@directives/editor.directive';
+  import { autofocus, dropdown, dropdownToggle } from '@/@directives/editor.directive';
+
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
+  import DropdownMenu from '@/@components/tool/DropdownMenu.vue';
 
   import TabacoFieldVue, {
     FormatType,
@@ -92,21 +60,28 @@
     HoverCtrlType
   } from '@/@types/tabaco.field';
 
+  import $ from 'jquery';
+
 
   @Component({
+    inject: {
+      $: {default: () => $}
+    },
     directives: {
       autofocus,
-      dropdown
+      dropdown,
+      dropdownToggle
     },
     components: {
-      TabacoFieldGroup
+      TabacoFieldGroup,
+      DropdownMenu
     }
   })
   export default class TabacoCombobox<DataModelType, ValueType> extends TabacoFieldVue {
     private filterText = '';
     private allOptions: DataModelType[] = [];
     private selectedOption: DataModelType | null = null;
-    private hoverIndex: HoverCtrlType = null;
+    private hoverAt: HoverCtrlType = null;
     private delayID!: any;
 
     @Prop() private valueField!: string;
@@ -122,21 +97,13 @@
       this.$emit(this.selectedOption === null ? 'disselected' : 'selected', this.selectedOption);
     }
 
-    get option(): DataModelType | null {
-      return this.selectedOption;
-    }
+    get option(): DataModelType | null { return this.selectedOption; }
 
-    get isRemote(): boolean {
-      return this.options instanceof Function;
-    }
+    get isRemote(): boolean { return this.options instanceof Function; }
 
-    get isFiltering(): boolean {
-      return this.allOptions.filter(dataModel => this.filterText === this.displayFormat(dataModel)).length === 0;
-    }
+    get isFiltering(): boolean { return this.allOptions.filter(d => this.filterText === this.displayFormat(d)).length === 0; }
 
-    get selectedDisplay(): string {
-      return this.selectedOption !== null ? this.displayFormat(this.selectedOption) : '';
-    }
+    get selectedDisplay(): string { return this.selectedOption !== null ? this.displayFormat(this.selectedOption) : ''; }
 
     get displayFormat(): FormatType<DataModelType> {
       return this.format instanceof Function ? this.format
@@ -173,27 +140,16 @@
       }
     }
 
-    isEmpty(): boolean {
-      return this.value === null;
-    }
-
-    setOptionHover(newIndex?: HoverCtrlType): void {
-      if (newIndex === undefined || newIndex === null || 'number' !== typeof newIndex || isNaN(newIndex))
-        this.hoverIndex = null;
-      else {
-        const count = $(this.$refs.menu).find(' > a.dropdown-item').length;
-
-        this.hoverIndex = (newIndex + count) % count; 
-      }
-    }
+    isEmpty(): boolean { return this.value === null; }
 
     setSelected(dataModel: DataModelType): void {
-      this.hoverIndex = null;
+      this.hoverAt = null;
       this.option     = dataModel;
     }
 
-    onAutofocus(): void {
-      ($(this.$refs.toggle) as any).dropdown('toggle');
+    getDefaultHoverAt(defaultNum: number): number {
+      return 'number' === typeof this.hoverAt && (this.hoverAt === 0 || !isNaN(this.hoverAt)) ? this.hoverAt
+        : this.selectedOption !== null ? this.datalist.indexOf(this.selectedOption) : defaultNum;
     }
 
     onFilterTextBlur(): void {
@@ -206,7 +162,7 @@
     }
 
     onTextfieldInput(): void {
-      this.hoverIndex = 0;
+      this.hoverAt = 0;
 
       if ('string' !== typeof this.filterText || this.filterText.trim().length === 0)
         this.option = null;

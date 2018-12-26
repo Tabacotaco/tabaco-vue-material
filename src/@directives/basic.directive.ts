@@ -75,5 +75,5 @@ export const snackbar = new TbcSnackbar(tbcSnackbar => ({
 /** TODO: Dialog
   */
 export const dialog = new TbcDialog(tbcDialog => ({
-  inserted : (el: HTMLElement, binding: VNodeDirective): void => tbcDialog.createPopupVue(TabacoDialog, {el, binding})
+  inserted : (el: HTMLElement, binding: VNodeDirective): void => tbcDialog.createPopupVue(TabacoDialog, {el})
 }));

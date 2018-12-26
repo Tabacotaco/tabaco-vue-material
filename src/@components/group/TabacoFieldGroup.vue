@@ -18,7 +18,7 @@
     // TODO: Label
     &.focused, &:not(.empty) {
       & > label.tabaco-label {
-        top: 12px;
+        top: 8px;
         left: calc(15px * .8);
         transform: scale(.8, .8);
         animation: tabaco-actived-label .1s linear;
@@ -83,8 +83,8 @@
     <slot v-if="editable && !isMbStress" name="editor" :isFocused="focused" :setFocused="setFocused" />
 
     <!-- TODO: Display -->
-    <slot v-if="!editable || isMbStress" name="display" :value="value" :format="options.format" :setFocused="setFocused">
-      <span class="display" v-scroll-top="options.displayScrollTop" :style="displayCSS" @click="setFocused(true)"
+    <slot v-if="!editable || isMbStress" name="display" :value="value" :format="options.format" :setFocused="setFocused" :displayClass="displayCLS">
+      <span class="display" :class="displayCLS" v-scroll-top="options.displayScrollTop" :style="displayCSS" @click="setFocused(true)"
         v-html="options.empty() ? '' : options.format(value)" @scroll="$emit('display-scroll', $event.target.scrollTop)" />
     </slot>
 
@@ -152,6 +152,11 @@
       return 'string' === typeof invalidMsg && invalidMsg.trim().length > 0;
     }
 
+    get displayCLS(): string[] {
+      return 'string' === typeof this.options.displayClass && this.options.displayClass.trim().length > 0 ?
+        [this.options.displayClass] : [];
+    }
+
     get displayCSS(): any {
       return 'number' !== typeof this.options.displayHeight || isNaN(this.options.displayHeight) ? {} : {
         height: `${this.options.displayHeight}px`
@@ -180,7 +185,6 @@
         ($((this.$refs.mbstress as any).$el) as any).modal('show');
 
       this.focused = true;
-      this.$el.scrollIntoView();
     }
 
     onCloseMbStress(value?: any): void {

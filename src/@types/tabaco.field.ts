@@ -1,6 +1,26 @@
 import { Vue, Prop } from 'vue-property-decorator';
-import { Color, SizeType } from '@/@types/tabaco.layout';
+import moment, { Moment } from 'moment';
 
+import { Color, SizeType, getColorCode } from '@/@types/tabaco.layout';
+
+
+type FormatType<T> = ((value: T) => string);
+type ValidType<T> = ((value: T) => string | void);
+type OptionValueType<ValueType> = ValueType | null;
+type RequestType<M> = (paramValues: string[]) => Promise<M[]>;
+type HoverCtrlType = number | null;
+
+interface IGroupOptions<T> {
+  color?         : Color;            def?   : SizeType;
+  disabled?      : boolean;          sm?    : SizeType;
+  label?         : string;           md?    : SizeType;
+  required?      : boolean;          lg?    : SizeType;
+  format?        : FormatType<T>;    xl?    : SizeType;
+  mainClass?     : string;           empty? : () => boolean;
+  displayClass?  : string;           valid? : ValidType<T>;
+  displayHeight? : number;
+  displayScrollTop? : number;
+};
 
 abstract class TabacoFieldVue extends Vue {
   @Prop() def? : SizeType;
@@ -20,7 +40,7 @@ abstract class TabacoFieldVue extends Vue {
   abstract isEmpty(): boolean;
 
   get colorCode(): string {
-    return 'string' === typeof this.color && this.color.trim().length > 0? this.color : Color.PRIMARY;
+    return getColorCode(this.color);
   }
 
   get isDisabled(): boolean {
@@ -41,21 +61,44 @@ abstract class TabacoFieldVue extends Vue {
   }
 }
 
-export default TabacoFieldVue;
+class FocusMoment {
+  static dateFormat  = 'YYYYMMDD';
+  static monthFormat = 'YYYYMM';
 
-export type FormatType<T> = ((value: T) => string);
-export type ValidType<T> = ((value: T) => string | void);
-export type OptionValueType<ValueType> = ValueType | null;
-export type RequestType<M> = (paramValues: string[]) => Promise<M[]>;
-export type HoverCtrlType = number | null;
+  constructor(private value: Moment = moment.utc()) {}
 
-export interface IGroupOptions<T> {
-  color?         : Color;            def?   : SizeType;
-  disabled?      : boolean;          sm?    : SizeType;
-  label?         : string;           md?    : SizeType;
-  required?      : boolean;          lg?    : SizeType;
-  format?        : FormatType<T>;    xl?    : SizeType;
-  mainClass?     : string;           empty? : () => boolean;
-  displayHeight? : number;           valid? : ValidType<T>;
-  displayScrollTop? : number;
+  get fmWeek(): number { return moment(this.value).startOf('month').isoWeek(); }
+  get toWeek(): number { return moment(this.value).endOf('month').isoWeek(); }
+  get weekCount(): number { return this.toWeek - this.fmWeek + 1; }
+
+  get year(): number { return this.getYear(this.value); }
+  get month(): number { return this.getMonth(this.value); }
+  get date(): number { return this.getDate(this.value); }
+
+  get monthFormat(): string { return this.value.format(FocusMoment.monthFormat); }
+
+  getDatesByWeekIndex(index: number): OptionValueType<number>[] {
+    const result: OptionValueType<number>[] = [];
+    const date = moment().day('Sunday').week(this.fmWeek + index);
+
+    for (let i = 0; i < 7; i++, date.add('day', 1)) {
+      result.push(this.getYear(date) === this.year && this.getMonth(date) === this.month ? this.getDate(date) : null);
+    }
+    return result;
+  }
+
+  private getYear  (m: Moment): number { return parseFloat(m.format('YYYY')); }
+  private getMonth (m: Moment): number { return parseFloat(m.format('MM')); }
+  private getDate  (m: Moment): number { return parseFloat(m.format('DD')); }
+}
+
+export {
+  FormatType,
+  ValidType,
+  OptionValueType,
+  RequestType,
+  HoverCtrlType,
+  IGroupOptions,
+  FocusMoment
 };
+export default TabacoFieldVue;

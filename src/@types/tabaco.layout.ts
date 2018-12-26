@@ -16,9 +16,10 @@ export enum Color {
   SECONDARY = 'secondary'
 };
 
-export const getColorCode = (color: Color = Color.PRIMARY): string => {
-  return color;
-};
+export const getColorCode = (color: Color = Color.PRIMARY): string => color;
+
+export const getTextColor = (color: Color = Color.PRIMARY): string =>
+  [Color.WARNING, Color.LIGHT].indexOf(getColorCode(color) as Color) < 0 ? Color.LIGHT : Color.DARK;
 
 // TODO: RWD Grid Column Options
 export type SizeType = number | boolean;

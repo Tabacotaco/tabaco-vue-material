@@ -81,8 +81,6 @@
   import TabacoFieldVue, { FormatType } from '@/@types/tabaco.field';
 
 
-  type NullNumber = null | undefined;
-
   @Component({
     directives: {
       autofocus
@@ -141,7 +139,7 @@
       this.number = (this.isNumber(this.number) ? this.number : 0) + (this.stepNum * (isAdd ? 1 : -1));
     }
 
-    private isNumber(value: number | NullNumber, allowed0: boolean = true): boolean {
+    private isNumber(value: any, allowed0: boolean = true): boolean {
       return 'number' === typeof value
         && ((allowed0 && (value === 0 || !isNaN(value))) || (!allowed0 && !isNaN(value)));
     }
