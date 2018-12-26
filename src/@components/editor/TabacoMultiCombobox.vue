@@ -11,7 +11,7 @@
     format       : displayFormat
   })">
     <div slot="editor" slot-scope="{setFocused}" class="dropdown editor tbc-dropdown" v-dropdown="setFocused" v-keep-dropdown>
-      <SelectedNav ref="toggle" :color="color" :disabled="disabled" :toggle="true" :list="option">
+      <SelectedNav ref="toggle" :color="color" :disabled="disabled" :toggle="true" :list="option" @remove="setSelected($event)">
         <template slot="option" slot-scope="{dataModel, index}">
           <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
             {{displayFormat(dataModel)}}
@@ -40,7 +40,7 @@
     </div>
 
     <span slot="display" slot-scope="{format, setFocused, displayClass}" class="display" :class="displayClass" @click="onClickDisplay($event, setFocused)">
-      <SelectedNav ref="toggle" :color="color" :disabled="disabled" :list="option">
+      <SelectedNav ref="toggle" :color="color" :disabled="disabled" :list="option" @remove="setSelected($event)">
         <template slot="option" slot-scope="{dataModel, index}">
           <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
             {{displayFormat(dataModel)}}
