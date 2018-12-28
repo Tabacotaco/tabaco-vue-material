@@ -18,14 +18,14 @@
 </style>
 
 <template>
-  <TabacoFieldGroup v-model="text" @display-scroll="displayScrollTop = $event" :options="getGroupOpts({
-    mainClass: 'tabaco-textarea',
-    format: overrideFormat,
-    displayHeight: heightPx,
-    displayScrollTop: displayScrollTop
+  <TabacoFieldGroup v-model="text" @display-scroll="dispScrlTop = $event" :options="getGroupOpts({
+    mainClass   : 'tabaco-textarea',
+    format      : overrideFormat,
+    dispHeight  : heightPx,
+    dispScrlTop : dispScrlTop
   })">
     <textarea v-autofocus slot="editor" slot-scope="{setFocused}" ref="editor" class="editor"
-      v-scroll-top="displayScrollTop" :style="{height: `${heightPx}px`}"
+      v-scroll-top="dispScrlTop" :style="{height: `${heightPx}px`}"
       v-model="text" @focus="setFocused(true)" @blur="setFocused(false) || doSizeSync($refs.editor.clientHeight)" />
 
     <textarea v-autofocus slot="mbstress" ref="editor" class="editor" :rows="showRows" v-model="text" />
@@ -37,10 +37,8 @@
   import { autofocus, scrollTop } from '@/@directives/editor.directive';
 
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
-  import TabacoFieldVue, { FormatType } from '@/@types/tabaco.field';
+  import TabacoFieldVue, { DisplayFormat } from '@/@types/tabaco.field';
 
-
-  type TextareaData = {displayHeight: number;};
 
   @Component({
     directives: {
@@ -52,8 +50,8 @@
     }
   })
   export default class TabacoTextarea extends TabacoFieldVue {
-    displayScrollTop = 20;
-    displayHeight = 0;
+    dispScrlTop = 20;
+    dispHeight  = 0;
 
     @Prop() rows?: number;
     @Prop() value!: string;
@@ -61,14 +59,14 @@
     mounted(): void { this.doSizeSync(); }
 
     set text(v: string) { this.$emit('input', v); }
-    set heightPx(v: number) { this.displayHeight = v; }
+    set heightPx(v: number) { this.dispHeight = v; }
 
     get text(): string { return this.value; }
-    get heightPx(): number { return this.displayHeight; }
+    get heightPx(): number { return this.dispHeight; }
     get showRows(): number { return 'number' === typeof this.rows && !isNaN(this.rows) ? this.rows : 2; }
-    get optionFormat(): FormatType<string> { return this.format instanceof Function ? this.format : (v => v); }
+    get optionFormat(): DisplayFormat<string> { return this.format instanceof Function ? this.format : (v => v); }
 
-    get overrideFormat(): FormatType<string> {
+    get overrideFormat(): DisplayFormat<string> {
       return (v => {
         const result = this.optionFormat(v);
 

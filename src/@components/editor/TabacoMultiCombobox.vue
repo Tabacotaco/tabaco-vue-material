@@ -6,11 +6,11 @@
 
 <template>
   <TabacoFieldGroup v-model="option" :options="getGroupOpts({
-    mainClass    : 'tabaco-multi-combobox dd-group',
-    displayClass : 'tbc-dropdown',
-    format       : displayFormat
+    mainClass : 'tabaco-multi-combobox dd-group',
+    dispClass : 'tbc-dropdown',
+    format    : displayFormat
   })">
-    <div slot="editor" slot-scope="{setFocused}" class="dropdown editor tbc-dropdown" v-dropdown="setFocused" v-keep-dropdown>
+    <div slot="editor" slot-scope="{setFocused}" class="dropdown editor tbc-dropdown" v-dropdown="setFocused" v-dropdown-lock>
       <SelectedNav ref="toggle" :color="color" :disabled="disabled" :toggle="true" :list="option" @remove="setSelected($event)">
         <template slot="option" slot-scope="{dataModel, index}">
           <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
@@ -63,19 +63,14 @@
 <script lang="ts">
   import { Component, Prop } from 'vue-property-decorator';
 
-  import { autofocus, dropdown, keepDropdown } from '@/@directives/editor.directive';
+  import { autofocus, dropdown, dropdownLock } from '@/@directives/editor.directive';
   import { isMobileLayout } from '@/@types/tabaco.layout';
 
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
   import SelectedNav from '@/@components/tool/SelectedNav.vue';
   import DropdownMenu from '@/@components/tool/DropdownMenu.vue';
 
-  import TabacoFieldVue, {
-    FormatType,
-    OptionValueType,
-    RequestType,
-    HoverCtrlType
-  } from '@/@types/tabaco.field';
+  import TabacoFieldVue, { DisplayFormat, EmptyValue, RequestPromise, HoverAt } from '@/@types/tabaco.field';
 
   import $ from 'jquery';
 
@@ -87,7 +82,7 @@
     directives: {
       autofocus,
       dropdown,
-      keepDropdown
+      dropdownLock
     },
     components: {
       TabacoFieldGroup,
@@ -95,20 +90,20 @@
       DropdownMenu
     }
   })
-  export default class TabacoMultiCombobox<DataModelType, ValueType> extends TabacoFieldVue {
+  export default class TabacoMultiCombobox<DataModel, ValueType> extends TabacoFieldVue {
     private filterText = '';
-    private allOptions: DataModelType[] = [];
-    private selectedOptions: DataModelType[] = [];
-    private hoverAt: HoverCtrlType = null;
+    private allOptions: DataModel[] = [];
+    private selectedOptions: DataModel[] = [];
+    private hoverAt: HoverAt = null;
     private delayID!: any;
 
     @Prop() private valueField!: string;
-    @Prop() private options!: RequestType<DataModelType> | Array<DataModelType>;
+    @Prop() private options!: RequestPromise<DataModel> | Array<DataModel>;
     @Prop() private placeholder?: string;
 
-    @Prop() value!: OptionValueType<ValueType[]>;
+    @Prop() value!: EmptyValue<ValueType[]>;
 
-    set option(v: DataModelType[]) {
+    set option(v: DataModel[]) {
       const sjson = this.selectedOptions.map(opt => JSON.stringify(opt));
       const vjson = v.map(opt => JSON.stringify(opt));
       const dis   = sjson.filter(opt => vjson.indexOf(opt) < 0);
@@ -121,22 +116,19 @@
       if (sel.length > 0) this.$emit('selected'    , sel.map(json => JSON.parse(json))[0]);
     }
 
-    get option(): DataModelType[] {
-      return this.selectedOptions;
-    }
-
+    get option(): DataModel[] { return this.selectedOptions; }
     get isFiltering(): boolean { return 'string' === typeof this.filterText && this.filterText.length > 0; }
     get isRemote(): boolean { return this.options instanceof Function; }
 
-    get displayFormat(): FormatType<DataModelType> {
+    get displayFormat(): DisplayFormat<DataModel> {
       return this.format instanceof Function ? this.format
-        : ((dataModel: DataModelType): string => dataModel ? (dataModel as any)[this.valueField] : null);
+        : ((dataModel: DataModel): string => dataModel ? (dataModel as any)[this.valueField] : null);
     }
 
-    get datalist(): DataModelType[] {
+    get datalist(): DataModel[] {
       const filters = this.filterText.split(' ').filter(param => param.trim().length > 0);
 
-      return this.isRemote ? this.allOptions : (this.options as DataModelType[]).filter((model: any) =>
+      return this.isRemote ? this.allOptions : (this.options as DataModel[]).filter((model: any) =>
         filters.length === 0 || filters.filter((param: string) =>
           Object.keys(model).filter((fieldName: string) =>
             model[fieldName].toString().toUpperCase().indexOf(param.toUpperCase()) >= 0
@@ -148,7 +140,7 @@
     created() {
       if (!this.isEmpty()) {
         if (!this.isRemote) {
-          const mappings = this.datalist.filter((dataModel: DataModelType) => (this.value as ValueType[]).indexOf((dataModel as any)[this.valueField]) >= 0);
+          const mappings = this.datalist.filter((dataModel: DataModel) => (this.value as ValueType[]).indexOf((dataModel as any)[this.valueField]) >= 0);
 
           if (mappings.length === 0) 
             this.option = [];
@@ -162,11 +154,11 @@
 
     isEmpty(): boolean { return !(this.value instanceof Array) || this.value.length === 0; }
 
-    isSelected(dataModel: DataModelType): boolean {
+    isSelected(dataModel: DataModel): boolean {
       return this.option.indexOf(dataModel) >= 0;
     }
 
-    setOptionHover(newIndex?: HoverCtrlType): void {
+    setOptionHover(newIndex?: HoverAt): void {
       if (newIndex === undefined || newIndex === null || 'number' !== typeof newIndex || isNaN(newIndex))
         this.hoverAt = null;
       else {
@@ -176,8 +168,8 @@
       }
     }
 
-    setSelected(dataModel: DataModelType): void {
-      const option = ([] as DataModelType[]).concat(this.option);
+    setSelected(dataModel: DataModel): void {
+      const option = ([] as DataModel[]).concat(this.option);
       const index = option.indexOf(dataModel);
 
       index < 0 ? option.push(dataModel) : option.splice(index, 1);
@@ -198,8 +190,8 @@
         clearTimeout(this.delayID);
 
         this.delayID = setTimeout(() =>
-          (this.options as RequestType<DataModelType>)(this.filterText.split(' ').filter(param => param.trim().length > 0))
-            .then((datalist: DataModelType[]) => this.allOptions = datalist)
+          (this.options as RequestPromise<DataModel>)(this.filterText.split(' ').filter(param => param.trim().length > 0))
+            .then((datalist: DataModel[]) => this.allOptions = datalist)
             .then(() => clearTimeout(this.delayID)),
           400
         );

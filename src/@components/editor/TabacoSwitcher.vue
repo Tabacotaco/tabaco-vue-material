@@ -62,7 +62,7 @@
   import { Component, Prop } from 'vue-property-decorator';
 
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
-  import TabacoFieldVue, { FormatType } from '@/@types/tabaco.field';
+  import TabacoFieldVue, { DisplayFormat } from '@/@types/tabaco.field';
 
 
   @Component({
@@ -84,7 +84,7 @@
       return this.value === true;
     }
 
-    get overrideFormat(): FormatType<boolean> {
+    get overrideFormat(): DisplayFormat<boolean> {
       return this.format instanceof Function ? this.format : (v => v === true ? 'On' : 'Off');
     }
 

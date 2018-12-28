@@ -35,10 +35,22 @@
             max-width: 40px !important;
           }
 
+          & th { text-align: center; }
+
           & td {
             text-align: right;
 
-            & > a.dropdown-item { border-radius: 50%; }
+            & > a.dropdown-item {
+              cursor: pointer; border-radius: 50%;
+
+              &:not(.disabled) { cursor: pointer; }
+              &.disabled { cursor: not-allowed; }
+              &:hover { background-color: unset; }
+              &.hover:not(.disabled) {
+                color: white !important;
+                background-color: #6c757d !important;
+              }
+            }
           }
         }
       }
@@ -48,15 +60,20 @@
 
 <template>
   <TabacoFieldGroup v-model="date" :options="getGroupOpts({
-    mainClass    : 'tabaco-datepicker dd-group',
-    displayClass : 'tbc-dropdown-datepicker',
-    format       : overrideFormat
+    mainClass : 'tabaco-datepicker dd-group',
+    dispClass : 'tbc-dropdown-datepicker',
+    format    : overrideFormat
   })">
     <div slot="editor" slot-scope="{setFocused}" class="dropdown datepicker editor" v-dropdown="setFocused">
-      <input ref="toggle" v-autofocus="onAutofocus"
-        type="text" data-toggle="dropdown" v-model="date" />
+      <input ref="toggle" type="text" v-model="date" v-dropdown-toggle
+        v-autofocus="() => $($refs.toggle).dropdown('toggle')" v-arrow="{
+        up    : () => hoverAt = focus.add(-7),
+        down  : () => hoverAt = focus.add( 7),
+        left  : () => hoverAt = focus.add(-1),
+        right : () => hoverAt = focus.add(1)
+      }" />
 
-      <div ref="menu" v-autooffset class="dropdown-menu light py-0 dropdown-calendar" :class="[`tbc-${colorCode}`]">
+      <div ref="menu" v-autorevise class="dropdown-menu light py-0 dropdown-calendar" :class="[`tbc-${colorCode}`]">
         <nav class="navbar px-2" :class="navbarCLS">
           <form class="form-inline mr-auto">
             <button type="button" class="btn border-0 tbc-dropdown" :class="[`btn-${colorCode}`]">
@@ -89,9 +106,11 @@
           </thead>
 
           <tbody>
-            <tr v-for="(w, wi) in focus.weekCount" :key="`week-${w}`">
-              <td v-for="(d, di) in focus.getDatesByWeekIndex(wi)" :key="`date-${di}`">
-                <a class="dropdown-item py-1 px-2">{{d}}</a>
+            <tr v-for="(w, wi) in focus.datesInWeek" :key="`week-${wi}`">
+              <td v-for="(d, di) in w" :key="`date-${di}`">
+                <a class="dropdown-item py-1 px-2" :class="{
+                  hover: focus.hoverAt === d
+                }">{{d}}</a>
               </td>
             </tr>
           </tbody>
@@ -105,23 +124,27 @@
   import { Component, Prop } from 'vue-property-decorator';
   import moment, { Moment } from 'moment';
 
-  import { autofocus, dropdown, autooffset } from '@/@directives/editor.directive';
+  import { arrow, autofocus, dropdown, dropdownToggle, autorevise } from '@/@directives/editor.directive';
   import { getTextColor } from '@/@types/tabaco.layout';
-  import TabacoFieldVue, { FormatType, FocusMoment } from '@/@types/tabaco.field';
+  import TabacoFieldVue, { DisplayFormat, FocusMoment, HoverAt } from '@/@types/tabaco.field';
 
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
+  import $ from 'jquery';
 
 
   type TbcDate = string | number;
 
   @Component({
     inject: {
-      getTextColor: {default: () => getTextColor}
+      $            : {default: () => $},
+      getTextColor : {default: () => getTextColor}
     },
     directives: {
+      arrow,
       autofocus,
-      autooffset,
-      dropdown
+      autorevise,
+      dropdown,
+      dropdownToggle
     },
     components: {
       TabacoFieldGroup
@@ -129,34 +152,30 @@
   })
   export default class TabacoDatepicker extends TabacoFieldVue {
     private focus!: FocusMoment;
+    private hoverAt: HoverAt = null;
 
-    momentVal: Moment | null = null;
+    mval: Moment = moment.utc('');
 
     @Prop() value!: TbcDate;
-    @Prop() private moment?: string;
+    @Prop({default: 'YYYY/MM/DD'}) private moment?: string;
 
     set date(v: TbcDate) {
-      this.momentVal = v ? moment.utc(v, 'string' === typeof v ? this.moment : undefined) : null;
-      this.focus     = new FocusMoment(this.momentVal === null ? undefined : this.momentVal);
+      this.mval = moment.utc(v, 'string' === typeof v ? this.moment : undefined);
+      this.focus     = new FocusMoment(this.mval);
     }
 
     get date(): TbcDate {
-      return this.momentVal === null ? '' : this.momentVal.format(this.moment);
+      return !this.mval || !this.mval.isValid ? '' : this.mval.format(this.moment);
     }
 
     get navbarCLS(): string[] {
-      const color = this.colorCode;
-
-      return [
-        `bg-${color}`,
-        `navbar-${['warning', 'light'].indexOf(color) < 0 ? 'dark' : 'light'}`
-      ]
+      return [`bg-${this.color}`, `navbar-${getTextColor(this.color)}`];
     }
 
-    get overrideFormat(): FormatType<TbcDate> {
+    get overrideFormat(): DisplayFormat<TbcDate> {
       return (v => {
-        if (this.isDate(v))
-          return 'string' === typeof this.moment && this.momentVal ? this.momentVal.format(this.moment) : v.toString();
+        if (this.mval.isValid())
+          return 'string' === typeof this.moment && this.mval ? this.mval.format(this.moment) : v.toString();
 
         return '';
       });
@@ -167,23 +186,7 @@
     }
 
     isEmpty(): boolean {
-      return !this.isDate(this.date);
-    }
-
-    onAutofocus(): void {
-      ($(this.$refs.toggle) as any).dropdown('toggle');
-    }
-
-    formatYearMonth(mvalue: Moment): string {
-      return mvalue ? mvalue.format('MMM YYYY') : '';
-    }
-
-    getWeekCounts(mvalue: Moment): number {
-      return mvalue ? (mvalue.isoWeek() - moment(mvalue).startOf('month').isoWeek() + 1) : 0;
-    }
-
-    private isDate(value: any): boolean {
-      return true;
+      return !this.mval.isValid();
     }
   }
 </script>

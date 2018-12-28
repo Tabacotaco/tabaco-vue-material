@@ -33,7 +33,7 @@
             :format="v => v? 'Bright' : 'Light'" />
 
           <TabacoCombobox label="Main Theme" :color="themeColor" :def="6" :sm="4" :disabled="disabled"
-            valueField="code" :options="comboOpts.filter(opt => opt.code != themeColor)" :format="dataModel => dataModel.text" v-model="mainColor">
+            valueField="code" :options="colorMenu.filter(opt => opt.code != themeColor)" :format="dataModel => dataModel.text" v-model="mainColor">
 
             <span slot="option" slot-scope="{dataModel, displayText, index}">
               <i class="fa fa-paint-brush mr-2" /> {{displayText}}
@@ -41,7 +41,7 @@
           </TabacoCombobox>
 
           <TabacoCombobox label="Field Theme" :color="themeColor" :def="6" :sm="4" :disabled="disabled"
-            valueField="code" :options="comboOpts.filter(opt => opt.code != mainColor)" :format="dataModel => dataModel.text" v-model="themeColor">
+            valueField="code" :options="colorMenu.filter(opt => opt.code != mainColor)" :format="dataModel => dataModel.text" v-model="themeColor">
 
             <span slot="option" slot-scope="{dataModel, displayText, index}">
               <i class="fa fa-paint-brush mr-2" /> {{displayText}}
@@ -70,7 +70,7 @@
           </div>
 
           <TabacoMultiCombobox label="Members" :color="themeColor" :disabled="disabled"
-            valueField="code" :options="multiOpts" :format="dataModel => dataModel.fullName" v-model="memberGroup">
+            valueField="code" :options="memberMenu" :format="dataModel => dataModel.name" v-model="memberGroup">
 
             <span slot="option" slot-scope="{dataModel, displayText, index}">
               <i class="fa fa-paint-brush mr-2" /> {{displayText}}
@@ -160,7 +160,7 @@
 
   interface IMultiModel {
     code: string;
-    fullName: string;
+    name: string;
   }
 
   @Component({
@@ -190,22 +190,22 @@
     private themeColor = 'info';    private memberName  = '';          private disabled = false;    private popupTitle   = '';
     private mainColor  = 'dark';    private numberValue = null;        private loading  = false;    private popupContent = '';
     private bright     = true;      private memberGroup = ['I843'];                                 private comments     = '';
-                                    private joinDate    = '2018/11/20';
+                                    private joinDate    = '';
 
-    private comboOpts: IComboBoxModel[] = [
-      {code: 'primary' , text: 'Blue'  }, {code: 'info'      , text: 'Cyan'   },
-      {code: 'success' , text: 'Green' }, {code: 'warning'   , text: 'Yellow' },
-      {code: 'danger'  , text: 'Red'   }, {code: 'dark'      , text: 'Black'  },
-      {code: 'light'   , text: 'White' }, {code: 'secondary' , text: 'Gray'   }
+    private colorMenu: IComboBoxModel[] = [
+      {code: 'primary' , text: 'Blue'     }, {code: 'info'      , text: 'Cyan'    },
+      {code: 'success' , text: 'Green'    }, {code: 'warning'   , text: 'Yellow'  },
+      {code: 'danger'  , text: 'Red'      }, {code: 'dark'      , text: 'Black'   },
+      {code: 'light'   , text: 'White'    }, {code: 'secondary' , text: 'Gray'    }
     ];
 
-    private multiOpts: IMultiModel[] = [
-      {code: 'A001' , fullName: 'Tom'      }, {code: 'B231' , fullName: 'Mary'    },
-      {code: 'A324' , fullName: 'John'     }, {code: 'B243' , fullName: 'Jane'    },
-      {code: 'C002' , fullName: 'Tommy'    }, {code: 'J110' , fullName: 'Taco'    },
-      {code: 'I843' , fullName: 'June'     }, {code: 'K333' , fullName: 'Daniel'  },
-      {code: 'K233' , fullName: 'Daisy'    }, {code: 'C100' , fullName: 'Abraham' },
-      {code: 'G100' , fullName: 'Nicholas' }, {code: 'Q203' , fullName: 'Mami'    }
+    private memberMenu: IMultiModel[] = [
+      {code: 'A001'    , name: 'Tom'      }, {code: 'B231'      , name: 'Mary'    },
+      {code: 'A324'    , name: 'John'     }, {code: 'B243'      , name: 'Jane'    },
+      {code: 'C002'    , name: 'Tommy'    }, {code: 'J110'      , name: 'Taco'    },
+      {code: 'I843'    , name: 'June'     }, {code: 'K333'      , name: 'Daniel'  },
+      {code: 'K233'    , name: 'Daisy'    }, {code: 'C100'      , name: 'Abraham' },
+      {code: 'G100'    , name: 'Nicholas' }, {code: 'Q203'      , name: 'Mami'    }
     ];
 
     get modalFieldColor(): string {

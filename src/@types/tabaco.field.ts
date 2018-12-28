@@ -4,22 +4,27 @@ import moment, { Moment } from 'moment';
 import { Color, SizeType, getColorCode } from '@/@types/tabaco.layout';
 
 
-type FormatType<T> = ((value: T) => string);
-type ValidType<T> = ((value: T) => string | void);
-type OptionValueType<ValueType> = ValueType | null;
-type RequestType<M> = (paramValues: string[]) => Promise<M[]>;
-type HoverCtrlType = number | null;
+type DisplayFormat<T> = ((value: T) => string);
+type Validation<T> = ((value: T) => string | void);
+type EmptyValue<ValueType> = ValueType | null;
+type RequestPromise<M> = (paramValues: string[]) => Promise<M[]>;
+type ArrowEvent = () => void;
+type HoverAt = number | null;
+
+enum ArrowCode {
+  LEFT  = 37,
+  UP    = 38,
+  RIGHT = 39,
+  DOWN  = 40
+}
 
 interface IGroupOptions<T> {
-  color?         : Color;            def?   : SizeType;
-  disabled?      : boolean;          sm?    : SizeType;
-  label?         : string;           md?    : SizeType;
-  required?      : boolean;          lg?    : SizeType;
-  format?        : FormatType<T>;    xl?    : SizeType;
-  mainClass?     : string;           empty? : () => boolean;
-  displayClass?  : string;           valid? : ValidType<T>;
-  displayHeight? : number;
-  displayScrollTop? : number;
+  disabled?    : boolean;    color?  : Color;               def? : SizeType;
+  required?    : boolean;    label?  : string;              sm?  : SizeType;
+  mainClass?   : string;     empty?  : () => boolean;       md?  : SizeType;
+  dispClass?   : string;     valid?  : Validation<T>;       lg?  : SizeType;
+  dispHeight?  : number;     format? : DisplayFormat<T>;    xl?  : SizeType;
+  dispScrlTop? : number;
 };
 
 abstract class TabacoFieldVue extends Vue {
@@ -34,8 +39,8 @@ abstract class TabacoFieldVue extends Vue {
   @Prop() label?: string;
   @Prop() required?: boolean;
   @Prop() disabled?: boolean;
-  @Prop() format?: FormatType<any>;
-  @Prop() valid?: ValidType<any>;
+  @Prop() format?: DisplayFormat<any>;
+  @Prop() valid?: Validation<any>;
 
   abstract isEmpty(): boolean;
 
@@ -65,11 +70,10 @@ class FocusMoment {
   static dateFormat  = 'YYYYMMDD';
   static monthFormat = 'YYYYMM';
 
-  constructor(private value: Moment = moment.utc()) {}
-
-  get fmWeek(): number { return moment(this.value).startOf('month').isoWeek(); }
-  get toWeek(): number { return moment(this.value).endOf('month').isoWeek(); }
-  get weekCount(): number { return this.toWeek - this.fmWeek + 1; }
+  constructor(private value: Moment = moment.utc()) {
+    if (!this.value.isValid())
+      this.value = moment.utc();
+  }
 
   get year(): number { return this.getYear(this.value); }
   get month(): number { return this.getMonth(this.value); }
@@ -77,14 +81,28 @@ class FocusMoment {
 
   get monthFormat(): string { return this.value.format(FocusMoment.monthFormat); }
 
-  getDatesByWeekIndex(index: number): OptionValueType<number>[] {
-    const result: OptionValueType<number>[] = [];
-    const date = moment().day('Sunday').week(this.fmWeek + index);
+  get datesInWeek(): EmptyValue<number>[][] {
+    const result: EmptyValue<number>[][] = [];
 
-    for (let i = 0; i < 7; i++, date.add('day', 1)) {
-      result.push(this.getYear(date) === this.year && this.getMonth(date) === this.month ? this.getDate(date) : null);
+    for (
+      let weekIndex = moment(this.value).startOf('month').isoWeek(), date = moment().day('Sunday').week(weekIndex);
+      this.getMonth(date) <= this.month && this.getYear(date) === this.year;
+      weekIndex++, date = moment().day('Sunday').week(weekIndex)
+    ) {
+      const week: EmptyValue<number>[] = [];
+
+      for (let i = 0; i < 7; i++, date.add('day', 1))
+        week.push(this.getYear(date) === this.year && this.getMonth(date) === this.month ? this.getDate(date) : null);
+
+      result.push(week);
     }
     return result;
+  }
+
+  add(days: number): number {
+    this.value.add('day', days);
+
+    return this.date;
   }
 
   private getYear  (m: Moment): number { return parseFloat(m.format('YYYY')); }
@@ -92,12 +110,35 @@ class FocusMoment {
   private getDate  (m: Moment): number { return parseFloat(m.format('DD')); }
 }
 
+class ArrowHover {
+
+  constructor(private e: {
+    up    : ArrowEvent;
+    down  : ArrowEvent;
+    left  : ArrowEvent;
+    right : ArrowEvent;
+  }) {}
+
+  get(arrow: ArrowCode): ArrowEvent {
+    const { up, down, left, right } = this.e;
+    const emptyFn: ArrowEvent = () => {};
+
+    switch (arrow) {
+    case ArrowCode.UP    : return up    instanceof Function ? up   : emptyFn;
+    case ArrowCode.DOWN  : return down  instanceof Function ? down : emptyFn;
+    case ArrowCode.LEFT  : return left  instanceof Function ? left : emptyFn;
+    case ArrowCode.RIGHT : return right instanceof Function ? right : emptyFn;
+    }
+  }
+}
+
 export {
-  FormatType,
-  ValidType,
-  OptionValueType,
-  RequestType,
-  HoverCtrlType,
+  ArrowCode,
+  DisplayFormat,
+  Validation,
+  EmptyValue,
+  RequestPromise,
+  HoverAt,
   IGroupOptions,
   FocusMoment
 };

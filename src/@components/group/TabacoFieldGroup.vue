@@ -84,7 +84,7 @@
 
     <!-- TODO: Display -->
     <slot v-if="!editable || isMbStress" name="display" :value="value" :format="options.format" :setFocused="setFocused" :displayClass="displayCLS">
-      <span class="display" :class="displayCLS" v-scroll-top="options.displayScrollTop" :style="displayCSS" @click="setFocused(true)"
+      <span class="display" :class="displayCLS" v-scroll-top="options.dispScrlTop" :style="displayCSS" @click="setFocused(true)"
         v-html="options.empty() ? '' : options.format(value)" @scroll="$emit('display-scroll', $event.target.scrollTop)" />
     </slot>
 
@@ -104,7 +104,7 @@
   import { Vue, Component, Prop } from 'vue-property-decorator';
 
   import { Color, ColumnSize, SizeType, isMobileLayout, getColorCode } from '@/@types/tabaco.layout';
-  import { IGroupOptions, FormatType, ValidType } from '@/@types/tabaco.field';
+  import { IGroupOptions } from '@/@types/tabaco.field';
   import { Button } from '@/@types/tabaco.popup';
   import { scrollTop } from '@/@directives/editor.directive';
 
@@ -153,13 +153,13 @@
     }
 
     get displayCLS(): string[] {
-      return 'string' === typeof this.options.displayClass && this.options.displayClass.trim().length > 0 ?
-        [this.options.displayClass] : [];
+      return 'string' === typeof this.options.dispClass && this.options.dispClass.trim().length > 0 ?
+        [this.options.dispClass] : [];
     }
 
     get displayCSS(): any {
-      return 'number' !== typeof this.options.displayHeight || isNaN(this.options.displayHeight) ? {} : {
-        height: `${this.options.displayHeight}px`
+      return 'number' !== typeof this.options.dispHeight || isNaN(this.options.dispHeight) ? {} : {
+        height: `${this.options.dispHeight}px`
       };
     }
 

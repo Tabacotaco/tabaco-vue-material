@@ -78,7 +78,7 @@
   import Numeral from 'numeral';
 
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
-  import TabacoFieldVue, { FormatType } from '@/@types/tabaco.field';
+  import TabacoFieldVue, { DisplayFormat } from '@/@types/tabaco.field';
 
 
   @Component({
@@ -122,13 +122,8 @@
       return this.isNumber(this.step, false) ? Math.abs(this.step as number) : 1;
     }
 
-    get overrideFormat(): FormatType<number> {
-      return (v => {
-        if (this.isNumber(v))
-          return 'string' === typeof this.numeral ? Numeral(v).format(this.numeral) : v.toString();
-
-        return '';
-      });
+    get overrideFormat(): DisplayFormat<number> {
+      return v => !this.isNumber(v) ? '' : 'string' === typeof this.numeral ? Numeral(v).format(this.numeral) : v.toString();
     }
 
     isEmpty(): boolean {

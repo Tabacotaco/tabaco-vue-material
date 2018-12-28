@@ -130,6 +130,7 @@
     content: "\f110";
     font-size: 48px;
     z-index: 11;
+    color: white;
     top: calc((100% - 48px) / 2);
     left: calc((100% - 48px) / 2);
     animation: tabaco-loading-rotate infinite 4s linear;

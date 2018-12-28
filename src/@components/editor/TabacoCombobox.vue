@@ -12,12 +12,12 @@
 
 <template>
   <TabacoFieldGroup v-model="option" :options="getGroupOpts({
-    mainClass    : 'tabaco-combobox dd-group',
-    displayClass : 'tbc-dropdown',
-    format       : displayFormat
+    mainClass : 'tabaco-combobox dd-group',
+    dispClass : 'tbc-dropdown',
+    format    : displayFormat
   })">
     <div slot="editor" slot-scope="{setFocused}" class="dropdown editor tbc-dropdown" v-dropdown="setFocused">
-      <input ref="toggle" v-autofocus="() => $($refs.toggle).dropdown('toggle')" v-dropdown-toggle="true"
+      <input ref="toggle" v-autofocus="() => $($refs.toggle).dropdown('toggle')" v-dropdown-toggle
         type="text" class="filter-text" v-model="filterText"
         @input="onTextfieldInput()"
         @keyup.up="hoverAt = getDefaultHoverAt(0) - 1"
@@ -53,12 +53,7 @@
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
   import DropdownMenu from '@/@components/tool/DropdownMenu.vue';
 
-  import TabacoFieldVue, {
-    FormatType,
-    OptionValueType,
-    RequestType,
-    HoverCtrlType
-  } from '@/@types/tabaco.field';
+  import TabacoFieldVue, { DisplayFormat, EmptyValue, RequestPromise, HoverAt } from '@/@types/tabaco.field';
 
   import $ from 'jquery';
 
@@ -77,19 +72,19 @@
       DropdownMenu
     }
   })
-  export default class TabacoCombobox<DataModelType, ValueType> extends TabacoFieldVue {
+  export default class TabacoCombobox<DataModel, ValueType> extends TabacoFieldVue {
     private filterText = '';
-    private allOptions: DataModelType[] = [];
-    private selectedOption: DataModelType | null = null;
-    private hoverAt: HoverCtrlType = null;
+    private allOptions: DataModel[] = [];
+    private selectedOption: DataModel | null = null;
+    private hoverAt: HoverAt = null;
     private delayID!: any;
 
     @Prop() private valueField!: string;
-    @Prop() private options!: RequestType<DataModelType> | Array<DataModelType>;
+    @Prop() private options!: RequestPromise<DataModel> | Array<DataModel>;
 
-    @Prop() value!: OptionValueType<ValueType>;
+    @Prop() value!: EmptyValue<ValueType>;
 
-    set option(v: DataModelType | null) {
+    set option(v: DataModel | null) {
       this.selectedOption = v;
       this.filterText     = this.selectedDisplay;
 
@@ -97,7 +92,7 @@
       this.$emit(this.selectedOption === null ? 'disselected' : 'selected', this.selectedOption);
     }
 
-    get option(): DataModelType | null { return this.selectedOption; }
+    get option(): DataModel | null { return this.selectedOption; }
 
     get isRemote(): boolean { return this.options instanceof Function; }
 
@@ -105,16 +100,16 @@
 
     get selectedDisplay(): string { return this.selectedOption !== null ? this.displayFormat(this.selectedOption) : ''; }
 
-    get displayFormat(): FormatType<DataModelType> {
+    get displayFormat(): DisplayFormat<DataModel> {
       return this.format instanceof Function ? this.format
-        : ((dataModel: DataModelType): string => dataModel ? (dataModel as any)[this.valueField] : null);
+        : ((dataModel: DataModel): string => dataModel ? (dataModel as any)[this.valueField] : null);
     }
 
-    get datalist(): DataModelType[] {
+    get datalist(): DataModel[] {
       const filters = this.filterText.split(' ').filter(param => param.trim().length > 0);
       const displayFormat = this.selectedDisplay;
 
-      return this.isRemote ? this.allOptions : (this.options as DataModelType[]).filter((model: any) =>
+      return this.isRemote ? this.allOptions : (this.options as DataModel[]).filter((model: any) =>
         filters.length === 0 || filters.filter((param: string) =>
           param === displayFormat || Object.keys(model).filter((fieldName: string) =>
             model[fieldName].toString().toUpperCase().indexOf(param.toUpperCase()) >= 0
@@ -126,7 +121,7 @@
     created() {
       if (!this.isEmpty()) {
         if (!this.isRemote) {
-          const mappings = this.datalist.filter((dataModel: DataModelType) => (dataModel as any)[this.valueField] === this.value);
+          const mappings = this.datalist.filter((dataModel: DataModel) => (dataModel as any)[this.valueField] === this.value);
 
           if (mappings.length === 0) 
             this.value = null;
@@ -142,7 +137,7 @@
 
     isEmpty(): boolean { return this.value === null; }
 
-    setSelected(dataModel: DataModelType): void {
+    setSelected(dataModel: DataModel): void {
       this.hoverAt = null;
       this.option     = dataModel;
     }
@@ -170,8 +165,8 @@
         clearTimeout(this.delayID);
 
         this.delayID = setTimeout(() =>
-          (this.options as RequestType<DataModelType>)(this.filterText.split(' ').filter(param => param.trim().length > 0))
-            .then((datalist: DataModelType[]) => this.allOptions = datalist)
+          (this.options as RequestPromise<DataModel>)(this.filterText.split(' ').filter(param => param.trim().length > 0))
+            .then((datalist: DataModel[]) => this.allOptions = datalist)
             .then(() => clearTimeout(this.delayID)),
           400
         );
