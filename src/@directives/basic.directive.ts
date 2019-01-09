@@ -1,5 +1,4 @@
-import { Vue } from 'vue-property-decorator';
-import { DirectiveOptions, VNodeDirective, VNode, CreateElement } from 'vue';
+import { DirectiveOptions, VNodeDirective } from 'vue';
 
 import { Color } from '@/@types/tabaco.layout';
 import { TbcSnackbar, TbcDialog } from '@/@types/tabaco.popup';

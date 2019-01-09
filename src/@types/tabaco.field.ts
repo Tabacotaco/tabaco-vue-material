@@ -1,5 +1,5 @@
 import { Vue, Prop } from 'vue-property-decorator';
-import moment, { Moment } from 'moment';
+import moment, { Moment, unitOfTime } from 'moment';
 
 import { Color, SizeType, getColorCode } from '@/@types/tabaco.layout';
 
@@ -78,58 +78,36 @@ class FocusMoment {
   get year(): number { return this.getYear(this.value); }
   get month(): number { return this.getMonth(this.value); }
   get date(): number { return this.getDate(this.value); }
+  get id(): number { return parseFloat(this.value.format(FocusMoment.dateFormat)); }
 
   get monthFormat(): string { return this.value.format(FocusMoment.monthFormat); }
 
-  get datesInWeek(): EmptyValue<number>[][] {
-    const result: EmptyValue<number>[][] = [];
+  add(unit: unitOfTime.DurationConstructor, days: number): number {
+    this.value.add(unit, days);
 
-    for (
-      let weekIndex = moment(this.value).startOf('month').isoWeek(), date = moment().day('Sunday').week(weekIndex);
-      this.getMonth(date) <= this.month && this.getYear(date) === this.year;
-      weekIndex++, date = moment().day('Sunday').week(weekIndex)
-    ) {
-      const week: EmptyValue<number>[] = [];
+    return this.id;
+  }
 
-      for (let i = 0; i < 7; i++, date.add('day', 1))
-        week.push(this.getYear(date) === this.year && this.getMonth(date) === this.month ? this.getDate(date) : null);
+  carlendars(): EmptyValue<{id: number; date: number;}>[][] {
+    const result: EmptyValue<{id: number; date: number;}>[][] = [];
+    const cnt = moment(this.value).daysInMonth();
+    const sd  = moment(this.value).startOf('month');
 
+    for (let di = 1; di <= cnt; ) {
+      const week: EmptyValue<{id: number; date: number;}>[] = [null, null, null, null, null, null, null];
+
+      for (let wi = sd.isoWeekday() % 7; wi < 7 && di <= cnt; sd.add('day', 1)) week[wi++] = {
+        id   : parseFloat(sd.format(FocusMoment.dateFormat)),
+        date : di++
+      };
       result.push(week);
     }
     return result;
   }
 
-  add(days: number): number {
-    this.value.add('day', days);
-
-    return this.date;
-  }
-
   private getYear  (m: Moment): number { return parseFloat(m.format('YYYY')); }
   private getMonth (m: Moment): number { return parseFloat(m.format('MM')); }
   private getDate  (m: Moment): number { return parseFloat(m.format('DD')); }
-}
-
-class ArrowHover {
-
-  constructor(private e: {
-    up    : ArrowEvent;
-    down  : ArrowEvent;
-    left  : ArrowEvent;
-    right : ArrowEvent;
-  }) {}
-
-  get(arrow: ArrowCode): ArrowEvent {
-    const { up, down, left, right } = this.e;
-    const emptyFn: ArrowEvent = () => {};
-
-    switch (arrow) {
-    case ArrowCode.UP    : return up    instanceof Function ? up   : emptyFn;
-    case ArrowCode.DOWN  : return down  instanceof Function ? down : emptyFn;
-    case ArrowCode.LEFT  : return left  instanceof Function ? left : emptyFn;
-    case ArrowCode.RIGHT : return right instanceof Function ? right : emptyFn;
-    }
-  }
 }
 
 export {

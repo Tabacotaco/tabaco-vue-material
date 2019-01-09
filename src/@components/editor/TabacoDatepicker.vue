@@ -48,6 +48,7 @@
               &:hover { background-color: unset; }
               &.hover:not(.disabled) {
                 color: white !important;
+                text-align: center !important;
                 background-color: #6c757d !important;
               }
             }
@@ -67,10 +68,10 @@
     <div slot="editor" slot-scope="{setFocused}" class="dropdown datepicker editor" v-dropdown="setFocused">
       <input ref="toggle" type="text" v-model="date" v-dropdown-toggle
         v-autofocus="() => $($refs.toggle).dropdown('toggle')" v-arrow="{
-        up    : () => hoverAt = focus.add(-7),
-        down  : () => hoverAt = focus.add( 7),
-        left  : () => hoverAt = focus.add(-1),
-        right : () => hoverAt = focus.add(1)
+        up    : () => hoverAt = focus.add('day', -7),
+        down  : () => hoverAt = focus.add('day',  7),
+        left  : () => hoverAt = focus.add('day', -1),
+        right : () => hoverAt = focus.add('day',  1)
       }" />
 
       <div ref="menu" v-autorevise class="dropdown-menu light py-0 dropdown-calendar" :class="[`tbc-${colorCode}`]">
@@ -82,11 +83,11 @@
           </form>
 
           <form class="form-inline">
-            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]">
+            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]" @click="hoverAt = focus.add('month', -1)">
               <i class="fa fa-caret-left" />
             </button>
 
-            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]">
+            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]" @click="hoverAt = focus.add('month', 1)">
               <i class="fa fa-caret-right" />
             </button>
           </form>
@@ -106,11 +107,11 @@
           </thead>
 
           <tbody>
-            <tr v-for="(w, wi) in focus.datesInWeek" :key="`week-${wi}`">
+            <tr v-for="(w, wi) in focus.carlendars()" :key="`week-${wi}`">
               <td v-for="(d, di) in w" :key="`date-${di}`">
-                <a class="dropdown-item py-1 px-2" :class="{
-                  hover: focus.hoverAt === d
-                }">{{d}}</a>
+                <a v-if="d !== null" class="dropdown-item py-1 px-2" :class="{
+                  hover: hoverAt === d.id
+                }">{{d.date}}</a>
               </td>
             </tr>
           </tbody>
@@ -160,8 +161,9 @@
     @Prop({default: 'YYYY/MM/DD'}) private moment?: string;
 
     set date(v: TbcDate) {
-      this.mval = moment.utc(v, 'string' === typeof v ? this.moment : undefined);
-      this.focus     = new FocusMoment(this.mval);
+      this.mval    = moment.utc(v, 'string' === typeof v ? this.moment : undefined);
+      this.focus   = new FocusMoment(this.mval);
+      this.hoverAt = this.focus.id;
     }
 
     get date(): TbcDate {

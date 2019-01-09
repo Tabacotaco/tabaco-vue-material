@@ -384,14 +384,14 @@ div.tabaco-field-group {
 // TODO: Label Actived
 @keyframes tabaco-actived-label {
   from {
-    top: calc(28px + .375rem);
-    left: calc(15px + .75rem);
+    top: 34px;
+    left: 27px;
     transform: scale(1, 1);
   }
 
   to {
     top: 8px;
-    left: 15px;
+    left: 12px;
     transform: scale(.8, .8);
   }
 }
@@ -399,13 +399,13 @@ div.tabaco-field-group {
 @keyframes tabaco-unactived-label {
   from {
     top: 8px;
-    left: 15px;
+    left: 12px;
     transform: scale(.8, .8);
   }
 
   to {
-    top: calc(28px + .375rem);
-    left: calc(15px + .75rem);
+    top: 34px;
+    left: 27px;
     transform: scale(1, 1);
   }
 }

@@ -19,16 +19,17 @@
     &.focused, &:not(.empty) {
       & > label.tabaco-label {
         top: 8px;
-        left: calc(15px * .8);
+        left: 12px;
         transform: scale(.8, .8);
         animation: tabaco-actived-label .1s linear;
       }
     }
 
     &.empty:not(.focused) > label.tabaco-label {
-      top: calc(28px + .375rem);
-      left: calc(15px + .75rem);
+      top: 34px;
+      left: 27px;
       transform: scale(1, 1);
+      max-width: calc(100% - 84px);
       color: inherit;
       animation: tabaco-unactived-label .1s linear;
     }
@@ -37,6 +38,10 @@
       position: absolute;
       pointer-events: none;
       color: inherit;
+      max-width: calc(100% - 30px);
+      white-space: nowrap; 
+      overflow: hidden;
+      text-overflow: ellipsis;
       user-select: none;
       -moz-user-select: none;
       -khtml-user-select: none;

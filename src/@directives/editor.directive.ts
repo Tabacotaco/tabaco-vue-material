@@ -6,16 +6,23 @@ import Popper, { Data } from 'popper.js';
 
 
 const arrow: DirectiveOptions = {
-  bind(el: HTMLElement, binding: VNodeDirective) {
-    const call = (arrow: string): void => binding.value && binding.value[arrow.toLowerCase()] ?
-      binding.value[arrow.toLowerCase()] : null;
+  bind(el: HTMLElement, binding: VNodeDirective, vnode: VNode) {
+    const call = (e: KeyboardEvent, arrow: string): void => {
+      if (binding.value && binding.value[arrow.toLowerCase()] instanceof Function) {
+        binding.value[arrow.toLowerCase()]();
 
-    $(el).on('keypress', e => {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    };
+
+    el.addEventListener('keydown', e => {
       switch (e.keyCode) {
-      case ArrowCode.LEFT  : call('left');  break;
-      case ArrowCode.UP    : call('up');    break;
-      case ArrowCode.RIGHT : call('right'); break;
-      case ArrowCode.DOWN  : call('down');  break;
+      case ArrowCode.LEFT  : call(e, 'left');  break;
+      case ArrowCode.UP    : call(e, 'up');    break;
+      case ArrowCode.RIGHT : call(e, 'right'); break;
+      case ArrowCode.DOWN  : call(e, 'down');  break;
+      default              : if (e.keyCode === 13) call(e, 'confirm');
       }
     });
   }

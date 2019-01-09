@@ -18,12 +18,12 @@
   })">
     <div slot="editor" slot-scope="{setFocused}" class="dropdown editor tbc-dropdown" v-dropdown="setFocused">
       <input ref="toggle" v-autofocus="() => $($refs.toggle).dropdown('toggle')" v-dropdown-toggle
-        type="text" class="filter-text" v-model="filterText"
-        @input="onTextfieldInput()"
-        @keyup.up="hoverAt = getDefaultHoverAt(0) - 1"
-        @keyup.down="hoverAt = getDefaultHoverAt(-1) + 1"
-        @keyup.enter="hoverAt === null? null : setSelected(datalist[hoverAt])"
-        @blur="onFilterTextBlur()" />
+        type="text" class="filter-text" @input="onTextfieldInput()" @blur="onFilterTextBlur()"
+        v-model="filterText" v-arrow="{
+          up      : () => hoverAt = getDefaultHoverAt(0) - 1,
+          down    : () => hoverAt = getDefaultHoverAt(-1) + 1,
+          confirm : () => hoverAt === null? null : setSelected(datalist[hoverAt])
+        }" />
 
       <DropdownMenu :hoverAt.sync="hoverAt" :color="color" :list="datalist" :actived="d => value === d[valueField]" @click="setSelected($event)">
         <template slot="option" slot-scope="{dataModel, index}">
@@ -48,7 +48,7 @@
 <script lang="ts">
   import { Component, Prop } from 'vue-property-decorator';
 
-  import { autofocus, dropdown, dropdownToggle } from '@/@directives/editor.directive';
+  import { arrow, autofocus, dropdown, dropdownToggle } from '@/@directives/editor.directive';
 
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
   import DropdownMenu from '@/@components/tool/DropdownMenu.vue';
@@ -63,6 +63,7 @@
       $: {default: () => $}
     },
     directives: {
+      arrow,
       autofocus,
       dropdown,
       dropdownToggle
