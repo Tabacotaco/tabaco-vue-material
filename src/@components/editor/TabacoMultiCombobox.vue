@@ -10,7 +10,11 @@
     dispClass : 'tbc-dropdown',
     format    : displayFormat
   })">
-    <div slot="editor" slot-scope="{setFocused}" class="dropdown editor tbc-dropdown" v-dropdown="setFocused" v-dropdown-lock>
+    <div slot="editor" slot-scope="{setFocused}" class="dropdown editor tbc-dropdown" v-dropdown="setFocused" v-dropdown-lock v-arrow="{
+      up      : () => hoverAt = (hoverAt === null ? 0 : hoverAt) - 1,
+      down    : () => hoverAt = (hoverAt === null ? -1 : hoverAt) + 1,
+      confirm : () => hoverAt === null? null : setSelected(datalist[hoverAt])
+    }">
       <SelectedNav ref="toggle" :color="color" :disabled="disabled" :toggle="true" :list="option" @remove="setSelected($event)">
         <template slot="option" slot-scope="{dataModel, index}">
           <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
@@ -23,10 +27,7 @@
           class="nav-item filter-text" contenteditable="true"
           @input="onTextfieldInput()"
           @blur="onFilterTextBlur()"
-          @keydown.enter="$event.preventDefault() || $event.stopPropagation()"
-          @keyup.up="hoverAt = (hoverAt === null ? 0 : hoverAt) - 1"
-          @keyup.down="hoverAt = (hoverAt === null ? -1 : hoverAt) + 1"
-          @keyup.enter="hoverAt === null? null : setSelected(datalist[hoverAt])"
+          @keydown.enter="onEnterDown($event)"
           @keyup.backspace="option.length > 0 && !isFiltering? setSelected(option[option.length - 1]) : null" />
       </SelectedNav>
 
@@ -40,7 +41,7 @@
     </div>
 
     <span slot="display" slot-scope="{format, setFocused, displayClass}" class="display" :class="displayClass" @click="onClickDisplay($event, setFocused)">
-      <SelectedNav ref="toggle" :color="color" :disabled="disabled" :list="option" @remove="setSelected($event)">
+      <SelectedNav :toggle="false" :color="color" :disabled="disabled" :list="option" @remove="setSelected($event)">
         <template slot="option" slot-scope="{dataModel, index}">
           <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
             {{displayFormat(dataModel)}}
@@ -63,7 +64,7 @@
 <script lang="ts">
   import { Component, Prop } from 'vue-property-decorator';
 
-  import { autofocus, dropdown, dropdownLock } from '@/@directives/editor.directive';
+  import { arrow, autofocus, dropdown, dropdownLock } from '@/@directives/editor.directive';
   import { isMobileLayout } from '@/@types/tabaco.layout';
 
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
@@ -80,6 +81,7 @@
       $: {default: () => $}
     },
     directives: {
+      arrow,
       autofocus,
       dropdown,
       dropdownLock
@@ -181,6 +183,13 @@
       this.hoverAt = clearHoverIndex ? null : this.hoverAt;
 
       $(this.$refs.filter).text('');
+    }
+
+    onEnterDown(e: KeyboardEvent): void {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (this.hoverAt !== null) this.setSelected(this.datalist[this.hoverAt]);
     }
 
     onTextfieldInput(): void {

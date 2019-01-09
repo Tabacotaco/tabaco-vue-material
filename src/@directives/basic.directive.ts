@@ -12,7 +12,7 @@ import TabacoDialog from '@/@components/tool/Dialog.vue';
   *   Binding this directive on the element whitch needs protecting by mask,
   *   and the option value is type of Boolean (true means Visible).
   */
-export const loading: DirectiveOptions = ((): DirectiveOptions => {
+const loading: DirectiveOptions = ((): DirectiveOptions => {
   const cls       = 'tabaco-loading-mask';
   const rebinding = (el: HTMLElement, binding: VNodeDirective): void => {
     if (binding.value === true)
@@ -35,7 +35,7 @@ export const loading: DirectiveOptions = ((): DirectiveOptions => {
   *     1. Dark Level: bright / light.
   *     2. Basic Color: primary / info / success / danger / warning / secondary / light / dark.
   */
-export const theme: DirectiveOptions = ((): DirectiveOptions => {
+const theme: DirectiveOptions = ((): DirectiveOptions => {
   const rebinding = (el: HTMLElement, binding: VNodeDirective): void => {
     const { depth = true    } = binding.value || {};
     const { basic = false   } = binding.value || {};
@@ -66,13 +66,21 @@ export const theme: DirectiveOptions = ((): DirectiveOptions => {
   *     1. delay: number, Snackbar would be closed voluntarily after this specify millisecond (default: 5000).
   *     2. position: string, set the fixed position of Snackbar by SnackbarPosition (default: SnackbarPosition.BOTTOM).
   */
-export const snackbar = new TbcSnackbar(tbcSnackbar => ({
+const snackbar = new TbcSnackbar(tbcSnackbar => ({
   inserted : (el: HTMLElement, binding: VNodeDirective): void => tbcSnackbar.createPopupVue(TabacoSnackbar, {el, binding})
 }));
 
 
 /** TODO: Dialog
   */
-export const dialog = new TbcDialog(tbcDialog => ({
-  inserted : (el: HTMLElement, binding: VNodeDirective): void => tbcDialog.createPopupVue(TabacoDialog, {el})
+const dialog = new TbcDialog(tbcDialog => ({
+  inserted : (el: HTMLElement): void => tbcDialog.createPopupVue(TabacoDialog, {el})
 }));
+
+
+export {
+  loading,
+  theme,
+  snackbar,
+  dialog
+};

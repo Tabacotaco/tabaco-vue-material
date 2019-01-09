@@ -19,8 +19,8 @@
     &.focused, &:not(.empty) {
       & > label.tabaco-label {
         top: 8px;
-        left: 12px;
-        transform: scale(.8, .8);
+        left: 15px;
+        font-size: 80%;
         animation: tabaco-actived-label .1s linear;
       }
     }
@@ -28,8 +28,8 @@
     &.empty:not(.focused) > label.tabaco-label {
       top: 34px;
       left: 27px;
-      transform: scale(1, 1);
-      max-width: calc(100% - 84px);
+      max-width: calc(100% - 90px);
+      font-size: 100%;
       color: inherit;
       animation: tabaco-unactived-label .1s linear;
     }
@@ -78,7 +78,7 @@
   <div class="tabaco-field-group" :class="groupCLS">
     <!-- TODO: Label -->
     <label class="tabaco-label">
-      <sup v-if="options.required === true" class="fa fa-asterisk" /> {{options.label}}
+      {{options.label}} <sup v-if="options.required === true" class="fa fa-asterisk" />
     </label>
 
     <!-- TODO: Field Toolbar -->

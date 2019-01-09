@@ -53,11 +53,11 @@
   })
   export default class DropdownMenu<DataModelType> extends Vue {
     @Prop() actived?: StatusFn<DataModelType>;
-    @Prop() hoverAt: HoverAt = null;
     @Prop() color?: Color;
     @Prop() list!: DataModelType[];
 
     @Prop({default: true}) offset?: boolean;
+    @Prop({default: null}) hoverAt?: HoverAt;
 
     get isActived(): StatusFn<DataModelType> {
       return this.actived instanceof Function ? this.actived : ((dataModel: DataModelType, index: number) => false);

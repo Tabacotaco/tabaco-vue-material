@@ -16,14 +16,13 @@
     dispClass : 'tbc-dropdown',
     format    : displayFormat
   })">
-    <div slot="editor" slot-scope="{setFocused}" class="dropdown editor tbc-dropdown" v-dropdown="setFocused">
+    <div slot="editor" slot-scope="{setFocused}" class="dropdown editor tbc-dropdown" v-dropdown="setFocused" v-arrow="{
+      up      : () => hoverAt = getDefaultHoverAt(0) - 1,
+      down    : () => hoverAt = getDefaultHoverAt(-1) + 1,
+      confirm : () => hoverAt === null? null : setSelected(datalist[hoverAt])
+    }">
       <input ref="toggle" v-autofocus="() => $($refs.toggle).dropdown('toggle')" v-dropdown-toggle
-        type="text" class="filter-text" @input="onTextfieldInput()" @blur="onFilterTextBlur()"
-        v-model="filterText" v-arrow="{
-          up      : () => hoverAt = getDefaultHoverAt(0) - 1,
-          down    : () => hoverAt = getDefaultHoverAt(-1) + 1,
-          confirm : () => hoverAt === null? null : setSelected(datalist[hoverAt])
-        }" />
+        type="text" class="filter-text" @input="onTextfieldInput()" @blur="onFilterTextBlur()" v-model="filterText" />
 
       <DropdownMenu :hoverAt.sync="hoverAt" :color="color" :list="datalist" :actived="d => value === d[valueField]" @click="setSelected($event)">
         <template slot="option" slot-scope="{dataModel, index}">

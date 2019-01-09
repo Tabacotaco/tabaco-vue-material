@@ -386,27 +386,27 @@ div.tabaco-field-group {
   from {
     top: 34px;
     left: 27px;
-    transform: scale(1, 1);
+    font-size: 100%;
   }
 
   to {
     top: 8px;
-    left: 12px;
-    transform: scale(.8, .8);
+    left: 15px;
+    font-size: 80%;
   }
 }
 
 @keyframes tabaco-unactived-label {
   from {
     top: 8px;
-    left: 12px;
-    transform: scale(.8, .8);
+    left: 15px;
+    font-size: 80%;
   }
 
   to {
     top: 34px;
     left: 27px;
-    transform: scale(1, 1);
+    font-size: 100%;
   }
 }
 

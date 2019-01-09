@@ -1,5 +1,6 @@
 import { Vue, Prop } from 'vue-property-decorator';
 import moment, { Moment, unitOfTime } from 'moment';
+import Numeral from 'numeral';
 
 import { Color, SizeType, getColorCode } from '@/@types/tabaco.layout';
 
@@ -8,15 +9,10 @@ type DisplayFormat<T> = ((value: T) => string);
 type Validation<T> = ((value: T) => string | void);
 type EmptyValue<ValueType> = ValueType | null;
 type RequestPromise<M> = (paramValues: string[]) => Promise<M[]>;
-type ArrowEvent = () => void;
 type HoverAt = number | null;
 
-enum ArrowCode {
-  LEFT  = 37,
-  UP    = 38,
-  RIGHT = 39,
-  DOWN  = 40
-}
+enum ArrowCode { LEFT = 37, UP = 38, RIGHT = 39, DOWN = 40 }
+enum CarlendarDisplay { YEAR, MONTH, DATE }
 
 interface IGroupOptions<T> {
   disabled?    : boolean;    color?  : Color;               def? : SizeType;
@@ -68,24 +64,73 @@ abstract class TabacoFieldVue extends Vue {
 
 class FocusMoment {
   static dateFormat  = 'YYYYMMDD';
-  static monthFormat = 'YYYYMM';
+
+  private dscode: CarlendarDisplay = CarlendarDisplay.DATE;
+  readonly yearsCount = 20;
 
   constructor(private value: Moment = moment.utc()) {
     if (!this.value.isValid())
       this.value = moment.utc();
   }
 
-  get year(): number { return this.getYear(this.value); }
-  get month(): number { return this.getMonth(this.value); }
-  get date(): number { return this.getDate(this.value); }
-  get id(): number { return parseFloat(this.value.format(FocusMoment.dateFormat)); }
+  get year()      : number { return parseFloat(this.value.format('YYYY')); }
+  get month()     : number { return parseFloat(this.value.format('MM')); }
+  get date()      : number { return parseFloat(this.value.format('DD')); }
+  get startYear() : number { return Math.floor((this.year - 1) / this.yearsCount) * this.yearsCount + 1; }
 
-  get monthFormat(): string { return this.value.format(FocusMoment.monthFormat); }
+  get id(): number {
+    switch (this.dscode) {
+    case CarlendarDisplay.MONTH : return parseFloat(this.value.format('YYYYMM'));
+    case CarlendarDisplay.YEAR  : return this.year;
+    default: return parseFloat(this.value.format(FocusMoment.dateFormat));
+    }
+  }
+
+  get display(): CarlendarDisplay { return this.dscode; }
+  get switcherIcon(): string { return CarlendarDisplay.DATE === this.dscode ? 'fa-caret-down' : 'fa-caret-up'; }
+  get switcherLabel(): string {
+    switch (this.dscode) {
+    case CarlendarDisplay.DATE  : return this.value.format('MMM YYYY');
+    case CarlendarDisplay.MONTH : return this.value.format('YYYY');
+    case CarlendarDisplay.YEAR  : return `${this.startYear} - ${this.startYear + this.yearsCount - 1}`;
+    default: return '';
+    }
+  }
 
   add(unit: unitOfTime.DurationConstructor, days: number): number {
     this.value.add(unit, days);
 
     return this.id;
+  }
+
+  switchDisplay(): Promise<{display: CarlendarDisplay; id: number;}> {
+    return new Promise<{display: CarlendarDisplay; id: number;}>(resolve => {
+      switch (this.dscode) {
+      case CarlendarDisplay.DATE:
+        this.dscode = CarlendarDisplay.YEAR;
+        break;
+      default:
+        this.dscode = CarlendarDisplay.DATE;
+      }
+      resolve({display: this.dscode, id: this.id});
+    });
+  }
+
+  years(): EmptyValue<{id: number; year: number;}>[][] {
+    const result: EmptyValue<{id: number; year: number;}>[][] = [];
+    let startYear = this.startYear;
+    const maxYear = startYear + this.yearsCount;
+    
+    while (startYear < maxYear) {
+      const line: EmptyValue<{id: number; year: number;}>[] = [null, null, null, null];
+
+      for (let i = 0; i < line.length; i++) line[i] = {
+        id   : startYear,
+        year : startYear++
+      };
+      result.push(line);
+    }
+    return result;
   }
 
   carlendars(): EmptyValue<{id: number; date: number;}>[][] {
@@ -104,14 +149,12 @@ class FocusMoment {
     }
     return result;
   }
-
-  private getYear  (m: Moment): number { return parseFloat(m.format('YYYY')); }
-  private getMonth (m: Moment): number { return parseFloat(m.format('MM')); }
-  private getDate  (m: Moment): number { return parseFloat(m.format('DD')); }
 }
+
 
 export {
   ArrowCode,
+  CarlendarDisplay,
   DisplayFormat,
   Validation,
   EmptyValue,
