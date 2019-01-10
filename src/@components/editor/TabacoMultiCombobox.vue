@@ -189,7 +189,7 @@
       e.preventDefault();
       e.stopPropagation();
 
-      if (this.hoverAt !== null) this.setSelected(this.datalist[this.hoverAt]);
+      if (this.hoverAt != null) this.setSelected(this.datalist[this.hoverAt]);
     }
 
     onTextfieldInput(): void {

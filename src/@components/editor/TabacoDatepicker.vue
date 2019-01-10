@@ -38,20 +38,16 @@
 
           & th { text-align: center; }
 
-          & td {
-            text-align: right;
+          & td > a.dropdown-item {
+            cursor: pointer; border-radius: 13.5px;
 
-            & > a.dropdown-item {
-              cursor: pointer; border-radius: 13.5px;
-
-              &:not(.disabled) { cursor: pointer; }
-              &.disabled { cursor: not-allowed; }
-              &:hover { background-color: unset; }
-              &.hover:not(.disabled) {
-                color: white !important;
-                text-align: center !important;
-                background-color: #6c757d !important;
-              }
+            &:not(.disabled) { cursor: pointer; }
+            &.disabled { cursor: not-allowed; }
+            &:hover { background-color: unset; }
+            &.hover:not(.disabled) {
+              color: white !important;
+              text-align: center !important;
+              background-color: #6c757d !important;
             }
           }
         }
@@ -66,36 +62,35 @@
     dispClass : 'tbc-dropdown-datepicker',
     format    : overrideFormat
   })">
-    <div slot="editor" slot-scope="{setFocused}" class="dropdown datepicker editor" v-dropdown="setFocused" v-arrow="{
-      up    : () => hoverAt = focus.add('day', -7),
-      down  : () => hoverAt = focus.add('day',  7),
-      left  : () => hoverAt = focus.add('day', -1),
-      right : () => hoverAt = focus.add('day',  1)
-    }">
+    <div ref="dropdown" slot="editor" slot-scope="{setFocused}" class="dropdown datepicker editor"
+      v-dropdown="setFocused" v-dropdown-lock v-arrow="focus.getArrowOptions(doRefreshMenu)">
       <input ref="toggle" type="text" v-model="date" v-dropdown-toggle
         v-autofocus="() => $($refs.toggle).dropdown('toggle')" />
 
       <div ref="menu" v-autorevise class="dropdown-menu light py-0 dropdown-calendar" :class="[`tbc-${colorCode}`]">
         <nav class="navbar px-2" :class="navbarCLS">
           <form class="form-inline mr-auto">
-            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]" @click="onSwitchDisplay()">
+            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]"
+              @click="focus.asSwitch().then(doRefreshMenu)">
               {{focus.switcherLabel}} <i class="fa" :class="[focus.switcherIcon]" />
             </button>
           </form>
 
           <form class="form-inline">
-            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]" @click="onPrevMenu()">
+            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]"
+              @click="focus.asPaging('prev').then(doRefreshMenu)">
               <i class="fa fa-angle-left" />
             </button>
 
-            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]" @click="onNextMenu()">
+            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]"
+              @click="focus.asPaging('next').then(doRefreshMenu)">
               <i class="fa fa-angle-right" />
             </button>
           </form>
         </nav>
 
-        <table v-if="CarlendarDisplay.DATE === dspMenu" class="table">
-          <thead class="bright" :class="[`tbc-${colorCode}`]">
+        <table class="table">
+          <thead v-if="focus.showWeekHeader" class="bright" :class="[`tbc-${colorCode}`]">
             <tr>
               <th>S<sub>un</sub></th>  <th>M<sub>on</sub></th>
               <th>T<sub>ue</sub></th>  <th>W<sub>ed</sub></th>
@@ -105,23 +100,15 @@
           </thead>
 
           <tbody>
-            <tr v-for="(w, wi) in focus.carlendars()" :key="`week-${wi}`">
-              <td v-for="(d, di) in w" :key="`date-${di}`">
-                <a v-if="d !== null" class="dropdown-item p-1" :class="{
-                  hover: hoverAt === d.id
-                }">{{d.date}}</a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <table v-if="CarlendarDisplay.YEAR === dspMenu" class="table">
-          <tbody>
-            <tr v-for="(l, li) in focus.years()" :key="`line-${li}`">
-              <td v-for="(y, yi) in l" :key="`year-${yi}`">
-                <a class="dropdown-item p-1" :class="{
-                  hover: hoverAt === y.id
-                }">{{y.year}}</a>
+            <tr v-for="(list, row) in focus.getCarlendars()" :key="`week-${row}`">
+              <td v-for="(item, col) in list" :key="`cell-${col}`" :class="focus.textAlign">
+                <a v-if="item !== null" class="dropdown-item p-1"
+                  @mouseenter="focus.asHover(item.id).then(doRefreshMenu)"
+                  @click="focus.asSelected(item.id).then(doRefreshMenu)" :class="{
+                    hover: hoverAt === item.id
+                  }">
+                  {{item.text}}
+                </a>
               </td>
             </tr>
           </tbody>
@@ -134,38 +121,35 @@
 <script lang="ts">
   import { Component, Prop } from 'vue-property-decorator';
   import moment, { Moment } from 'moment';
-
-  import { getTextColor } from '@/@types/tabaco.layout';
-  import TabacoFieldVue, { CarlendarDisplay, DisplayFormat, FocusMoment, HoverAt } from '@/@types/tabaco.field';
-
-  import { arrow, autofocus, dropdown, dropdownToggle, autorevise } from '@/@directives/editor.directive';
-  
-  import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
   import $ from 'jquery';
 
+  import { getTextColor } from '@/@types/tabaco.layout';
+  import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
+
+  import { arrow, autofocus, dropdown, dropdownLock, dropdownToggle, autorevise } from '@/@directives/editor.directive';
+  import TabacoFieldVue, { DisplayFormat, FocusMoment, HoverAt, ICarlendarMenu } from '@/@types/tabaco.field';
 
   type TbcDate = string | number;
 
   @Component({
     inject: {
-      $                : {default: () => $},
-      getTextColor     : {default: () => getTextColor},
-      CarlendarDisplay : {default: () => CarlendarDisplay}
+      $            : {default: () => $},
+      getTextColor : {default: () => getTextColor}
+    },
+    components: {
+      TabacoFieldGroup
     },
     directives: {
       arrow,
       autofocus,
-      autorevise,
       dropdown,
-      dropdownToggle
-    },
-    components: {
-      TabacoFieldGroup
+      dropdownLock,
+      dropdownToggle,
+      autorevise
     }
   })
   export default class TabacoDatepicker extends TabacoFieldVue {
     private focus!: FocusMoment;
-    private dspMenu: CarlendarDisplay = CarlendarDisplay.DATE;
     private hoverAt: HoverAt = null;
 
     mval: Moment = moment.utc('');
@@ -176,8 +160,7 @@
     set date(v: TbcDate) {
       this.mval    = moment.utc(v, 'string' === typeof v ? this.moment : undefined);
       this.focus   = new FocusMoment(this.mval);
-      this.dspMenu = this.focus.display;
-      this.hoverAt = this.focus.id;
+      this.hoverAt = this.focus.hoverID;
     }
 
     get date(): TbcDate {
@@ -205,32 +188,12 @@
       return !this.mval.isValid();
     }
 
-    onSwitchDisplay(): void {
-      this.focus.switchDisplay().then(res => {
-        this.dspMenu = res.display;
-        this.hoverAt = res.id;
-      });
-    }
+    doRefreshMenu(res: ICarlendarMenu): void {
+      this.hoverAt = res.hoverAt;
 
-    onPrevMenu(): void {
-      switch (this.dspMenu) {
-      case CarlendarDisplay.DATE:
-        this.hoverAt = this.focus.add('month', -1);
-        break;
-      case CarlendarDisplay.YEAR:
-        this.hoverAt = this.focus.add('year', this.focus.yearsCount * -1);
-        break;
-      }
-    }
-
-    onNextMenu(): void {
-      switch (this.dspMenu) {
-      case CarlendarDisplay.DATE:
-        this.hoverAt = this.focus.add('month', 1);
-        break;
-      case CarlendarDisplay.YEAR:
-        this.hoverAt = this.focus.add('year', this.focus.yearsCount);
-        break;
+      if ('string' === typeof res.selected && res.selected.trim().length > 0) {
+        this.date = res.selected;
+        ($(this.$refs.dropdown) as any).dropdown('toggle');
       }
     }
   }

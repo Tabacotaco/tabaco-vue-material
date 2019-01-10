@@ -17,7 +17,6 @@
     <a v-for="(dataModel, index) in list" :key="`option-${index}`"
       @click="$emit('click', dataModel)"
       @mouseover="$emit('update:hoverAt', index)"
-      @mouseout="$emit('update:hoverAt')"
       :class="{
         'dropdown-item' : true,
         hover           : hover === index,

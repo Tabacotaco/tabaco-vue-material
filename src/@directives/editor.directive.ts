@@ -75,7 +75,7 @@ const dropdown: DirectiveOptions = {
 const dropdownLock: DirectiveOptions = {
   bind(el: HTMLElement) {
     if ($(el).hasClass('v-dropdown')) $(el).on('hide.bs.dropdown', (e: any) =>
-      !(e.clickEvent && $.contains(el, $(e.clickEvent.target)[0]) === true)
+      !(e.clickEvent && ($(e.clickEvent.target).hasClass('dropdown-item') || el.contains(e.clickEvent.target)))
     );
   }
 };
