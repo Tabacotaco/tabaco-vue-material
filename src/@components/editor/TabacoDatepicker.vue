@@ -63,8 +63,8 @@
     format    : overrideFormat
   })">
     <div ref="dropdown" slot="editor" slot-scope="{setFocused}" class="dropdown datepicker editor"
-      v-dropdown="setFocused" v-dropdown-lock v-dropdown-close="() => doResetFocusMoment()"
-      v-arrow="focus.getArrowOptions(doRefreshMenu)">
+      v-dropdown="setFocused" v-dropdown-lock v-dropdown-close="() => doResetRemote()"
+      v-arrow="remote.arrowOptions">
 
       <input ref="toggle" type="text" v-model="date" v-dropdown-toggle
         v-autofocus="() => $($refs.toggle).dropdown('toggle')" />
@@ -73,26 +73,24 @@
         <nav class="navbar px-2" :class="navbarCLS">
           <form class="form-inline mr-auto">
             <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]"
-              @click="focus.asSwitch().then(doRefreshMenu)">
-              {{focus.switcherLabel}} <i class="fa" :class="[focus.switcherIcon]" />
+              @click="remote.asSwitch()">
+              {{remote.switcherLabel}} <i class="fa" :class="[remote.switcherIcon]" />
             </button>
           </form>
 
           <form class="form-inline">
-            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]"
-              @click="focus.asPaging('prev').then(doRefreshMenu)">
+            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]" @click="remote.asPaging('prev')">
               <i class="fa fa-angle-left" />
             </button>
 
-            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]"
-              @click="focus.asPaging('next').then(doRefreshMenu)">
+            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]" @click="remote.asPaging('next')">
               <i class="fa fa-angle-right" />
             </button>
           </form>
         </nav>
 
         <table class="table">
-          <thead v-if="focus.showWeekHeader" class="bright" :class="[`tbc-${colorCode}`]">
+          <thead v-if="remote.showWeekHeader" class="bright" :class="[`tbc-${colorCode}`]">
             <tr>
               <th>S<sub>un</sub></th>  <th>M<sub>on</sub></th>
               <th>T<sub>ue</sub></th>  <th>W<sub>ed</sub></th>
@@ -102,14 +100,11 @@
           </thead>
 
           <tbody>
-            <tr v-for="(list, row) in focus.getCarlendars()" :key="`week-${row}`">
-              <td v-for="(item, col) in list" :key="`cell-${col}`" :class="focus.textAlign">
-                <a v-if="item !== null" class="dropdown-item p-1" :data-id="item.id"
-                  @mouseenter="focus.asHover(item.id).then(doRefreshMenu)"
-                  @click="focus.asSelected(item.id).then(doRefreshMenu)" :class="{
-                    hover  : hoverAt === item.id,
-                    active : focus.selectedID === item.id
-                  }">
+            <tr v-for="(list, row) in remote.getCarlendars()" :key="`week-${row}`">
+              <td v-for="(item, col) in list" :key="`cell-${col}`" :class="remote.textAlign">
+                <a v-if="item !== null" class="dropdown-item p-1" :class="remote.getItemClass(item.id, hoverAt)"
+                  @mouseenter="remote.asHover(item.id)"
+                  @click="remote.asSelected(item.id)">
                   {{item.text}}
                 </a>
               </td>
@@ -131,7 +126,7 @@
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
 
   import { arrow, autofocus, dropdown, dropdownLock, dropdownToggle, autorevise } from '@/@directives/editor.directive';
-  import TabacoFieldVue, { DisplayFormat, FocusMoment, HoverAt, ICarlendarMenu } from '@/@types/tabaco.field';
+  import TabacoFieldVue, { DisplayFormat, CarlendarRemote, HoverAt, ICarlendarMenu } from '@/@types/tabaco.field';
 
   type TbcDate = string | number;
 
@@ -157,7 +152,7 @@
     }
   })
   export default class TabacoDatepicker extends TabacoFieldVue {
-    private focus!: FocusMoment;
+    private remote!: CarlendarRemote;
     private hoverAt: HoverAt = null;
 
     mval: Moment = moment.utc('');
@@ -167,7 +162,7 @@
 
     set date(v: TbcDate) {
       this.mval = moment.utc(v, 'string' === typeof v ? this.moment : undefined);
-      this.doResetFocusMoment();
+      this.doResetRemote();
     }
 
     get date(): TbcDate {
@@ -195,18 +190,15 @@
       return !this.mval.isValid();
     }
 
-    doResetFocusMoment(): void {
-      this.focus   = new FocusMoment(this.mval);
-      this.hoverAt = this.focus.hoverID;
-    }
+    doResetRemote(): void {
+      this.remote = new CarlendarRemote(this.mval, (res: ICarlendarMenu): void => {
+        this.hoverAt = res.hoverAt;
 
-    doRefreshMenu(res: ICarlendarMenu): void {
-      this.hoverAt = res.hoverAt;
-
-      if ('string' === typeof res.selected) {
-        this.date = res.selected;
-        ($(this.$refs.dropdown) as any).dropdown('toggle');
-      }
+        if ('string' === typeof res.selected) {
+          this.date = res.selected;
+          ($(this.$refs.dropdown) as any).dropdown('toggle');
+        }
+      });
     }
   }
 </script>

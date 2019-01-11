@@ -69,25 +69,31 @@ abstract class TabacoFieldVue extends Vue {
   }
 }
 
-class FocusMoment {
+class CarlendarRemote {
   private static DefaultFormat = 'YYYYMMDD';
   private static YearPageSize  = 20;
 
   private dscode: CarlendarDisplay = CarlendarDisplay.DATE;
+  private selecting = false;
   private temp?: Moment;
   private selected!: string;
 
-  constructor(private hover: Moment = moment.utc()) {
+  constructor(
+    private hover: Moment = moment.utc(),
+    private refreshFn: (res: ICarlendarMenu) => void
+  ) {
     if (!this.hover.isValid())
       this.hover = moment.utc();
     else
-      this.selected = this.hover.format(FocusMoment.DefaultFormat);
+      this.selected = this.hover.format(CarlendarRemote.DefaultFormat);
+
+    this.refreshFn({hoverAt: this.hoverID});
   }
 
-  get year()      : number { return parseFloat(this.hover.format('YYYY')); }
-  get month()     : number { return parseFloat(this.hover.format('MM')); }
-  get date()      : number { return parseFloat(this.hover.format('DD')); }
-  get startYear() : number { return Math.floor((this.year - 1) / FocusMoment.YearPageSize) * FocusMoment.YearPageSize + 1; }
+  get year()      : number { return parseFloat(this.hover.format('YYYY' )); }
+  get month()     : number { return parseFloat(this.hover.format('MM'   )); }
+  get date()      : number { return parseFloat(this.hover.format('DD'   )); }
+  get startYear() : number { return Math.floor((this.year - 1) / CarlendarRemote.YearPageSize) * CarlendarRemote.YearPageSize + 1; }
 
   get display(): CarlendarDisplay { return this.dscode; }
   get showWeekHeader(): boolean { return CarlendarDisplay.DATE === this.dscode; }
@@ -95,10 +101,23 @@ class FocusMoment {
   get switcherIcon(): string { return CarlendarDisplay.DATE === this.dscode ? 'fa-caret-down' : 'fa-caret-up'; }
   get switcherLabel(): string {
     switch (this.dscode) {
-      case CarlendarDisplay.DATE  : return this.hover.format('MMM YYYY');
-      case CarlendarDisplay.MONTH : return this.hover.format('YYYY');
-      case CarlendarDisplay.YEAR  : return `${this.startYear} - ${this.startYear + FocusMoment.YearPageSize - 1}`;
+      case CarlendarDisplay.DATE  : return this.hover.format('MMM YYYY' );
+      case CarlendarDisplay.MONTH : return this.hover.format('YYYY'     );
+      case CarlendarDisplay.YEAR  : return `${this.startYear} - ${this.startYear + CarlendarRemote.YearPageSize - 1}`;
     }
+  }
+
+  get arrowOptions(): ({
+    up   : () => void; down  : () => void; confirm: () => void;
+    left : () => void; right : () => void;
+  }) {
+    return {
+      up      : () => this.asArrow('UP'    ),
+      down    : () => this.asArrow('DOWN'  ),
+      left    : () => this.asArrow('LEFT'  ),
+      right   : () => this.asArrow('RIGHT' ),
+      confirm : () => this.asSelected(this.hoverID)
+    };
   }
 
   get selectedID(): number {
@@ -109,80 +128,75 @@ class FocusMoment {
     switch (this.dscode) {
       case CarlendarDisplay.YEAR  : return this.year;
       case CarlendarDisplay.MONTH : return parseFloat(this.hover.format('YYYYMM'));
-      case CarlendarDisplay.DATE  : return parseFloat(this.hover.format(FocusMoment.DefaultFormat));
+      case CarlendarDisplay.DATE  : return parseFloat(this.hover.format(CarlendarRemote.DefaultFormat));
     }
   }
 
 
-  asSwitch(): Promise<ICarlendarMenu> {
-    return new Promise<ICarlendarMenu>(resolve => {
-      switch (this.dscode) {
-        case CarlendarDisplay.DATE:
-          this.temp   = moment(this.hover);
-          this.dscode = CarlendarDisplay.YEAR;
-          break;
-        default:
-          this.dscode = CarlendarDisplay.DATE;
-          this.hover  = moment(this.temp);
-      }
-      resolve({hoverAt: this.hoverID});
-    });
+  asSwitch(): void {
+    switch (this.dscode) {
+      case CarlendarDisplay.DATE:
+        this.temp   = moment(this.hover);
+        this.dscode = CarlendarDisplay.YEAR;
+        break;
+      default:
+        this.dscode    = CarlendarDisplay.DATE;
+        this.hover     = moment(this.temp);
+        this.selecting = true;
+    }
+    this.refreshFn({hoverAt: this.hoverID});
   }
 
-  asPaging(kind: 'next' | 'prev'): Promise<ICarlendarMenu> {
-    return new Promise<ICarlendarMenu>(resolve => {
-      switch (this.dscode) {
-        case CarlendarDisplay.DATE  : this.hover.add(1 * ('next' === kind ? 1 : -1), 'month' ); break;
-        case CarlendarDisplay.MONTH : this.hover.add(1 * ('next' === kind ? 1 : -1), 'year'  ); break;
-        case CarlendarDisplay.YEAR  : this.hover.add(FocusMoment.YearPageSize * ('next' === kind ? 1 : -1), 'year');
-      }
-      resolve({hoverAt: this.hoverID});
-    });
+  asPaging(kind: 'next' | 'prev'): void {
+    switch (this.dscode) {
+      case CarlendarDisplay.DATE  : this.hover.add(1 * ('next' === kind ? 1 : -1), 'month' ); break;
+      case CarlendarDisplay.MONTH : this.hover.add(1 * ('next' === kind ? 1 : -1), 'year'  ); break;
+      case CarlendarDisplay.YEAR  : this.hover.add(CarlendarRemote.YearPageSize * ('next' === kind ? 1 : -1), 'year');
+    }
+    this.selecting = true;
+    this.refreshFn({hoverAt: this.hoverID});
   }
 
-  asHover(newID: number): Promise<ICarlendarMenu> {
-    return new Promise<ICarlendarMenu>(resolve => {
-      let hoverDate: string = '';
+  asHover(newID: number, slient: boolean = false): void {
+    let hoverDate: string = '';
 
-      switch (this.dscode) {
-        case CarlendarDisplay.DATE  : hoverDate = `${Numeral(newID).format('00000000')}`; break;
-        case CarlendarDisplay.MONTH : hoverDate = `${Numeral(newID).format('000000')}01`; break;
-        case CarlendarDisplay.YEAR  : hoverDate = `${Numeral(newID).format('0000')}0101`;
-      }
-      this.hover = moment.utc(hoverDate, FocusMoment.DefaultFormat);
-      resolve({hoverAt: this.hoverID});
-    });
+    switch (this.dscode) {
+      case CarlendarDisplay.DATE  : hoverDate = `${Numeral(newID).format('00000000')}`; break;
+      case CarlendarDisplay.MONTH : hoverDate = `${Numeral(newID).format('000000')}01`; break;
+      case CarlendarDisplay.YEAR  : hoverDate = `${Numeral(newID).format('0000')}0101`;
+    }
+    this.hover     = moment.utc(hoverDate, CarlendarRemote.DefaultFormat);
+    this.selecting = true;
+    
+    if (slient !== true) this.refreshFn({hoverAt: this.hoverID});
   }
 
-  asSelected(targetID: number): Promise<ICarlendarMenu> {
-    return this.asHover(targetID).then(res => {
-      switch (this.dscode) {
-        case CarlendarDisplay.YEAR:
-          this.dscode = CarlendarDisplay.MONTH;
+  asSelected(targetID: number): void {
+    this.asHover(targetID, true);
 
-          return {hoverAt: this.hoverID};
-        case CarlendarDisplay.MONTH:
-          this.dscode = CarlendarDisplay.DATE;
+    switch (this.dscode) {
+      case CarlendarDisplay.YEAR:
+        this.dscode = CarlendarDisplay.MONTH;
+        this.refreshFn({hoverAt: this.hoverID});
 
-          return {hoverAt: this.hoverID};
-        case CarlendarDisplay.DATE:
-          this.selected = this.hover.format(FocusMoment.DefaultFormat);
-          this.hover    = moment.invalid();
+        break;
+      case CarlendarDisplay.MONTH:
+        this.dscode = CarlendarDisplay.DATE;
+        this.refreshFn({hoverAt: this.hoverID});
 
-          return {hoverAt: this.hoverID, selected: this.selected};
-      }
-    });
+        break;
+      case CarlendarDisplay.DATE:
+        this.selected = this.hover.format(CarlendarRemote.DefaultFormat);
+        this.hover    = moment.invalid();
+
+        this.refreshFn({hoverAt: this.hoverID, selected: this.selected});
+    }
   }
 
-  getArrowOptions(refreshFn: (res: ICarlendarMenu) => void): ({
-    up   : () => void; down  : () => void;
-    left : () => void; right : () => void;
-  }) {
+  getItemClass(itemID: number, hoverAt: number | null): ({hover: boolean; active: boolean}) {
     return {
-      up    : () => this.asArrow('UP'    ).then(refreshFn),
-      down  : () => this.asArrow('DOWN'  ).then(refreshFn),
-      left  : () => this.asArrow('LEFT'  ).then(refreshFn),
-      right : () => this.asArrow('RIGHT' ).then(refreshFn)
+      hover  : (this.selecting || isNaN(this.selectedID) || CarlendarDisplay.DATE !== this.dscode) && hoverAt === itemID,
+      active : this.selectedID === itemID
     };
   }
 
@@ -195,15 +209,14 @@ class FocusMoment {
   }
 
 
-  private asArrow(arrowKey: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'): Promise<ICarlendarMenu> {
-    return new Promise<ICarlendarMenu>(resolve => {
-      switch (this.dscode) {
-        case CarlendarDisplay.MONTH : this.hover.add(CarlendarYmArrow[arrowKey]   , 'month' );   break;
-        case CarlendarDisplay.YEAR  : this.hover.add(CarlendarYmArrow[arrowKey]   , 'year'  );   break;
-        case CarlendarDisplay.DATE  : this.hover.add(CarlendarDateArrow[arrowKey] , 'day'   );
-      }
-      resolve({hoverAt: this.hoverID});
-    });
+  private asArrow(arrowKey: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'): void {
+    switch (this.dscode) {
+      case CarlendarDisplay.MONTH : this.hover.add(CarlendarYmArrow[arrowKey]   , 'month' );   break;
+      case CarlendarDisplay.YEAR  : this.hover.add(CarlendarYmArrow[arrowKey]   , 'year'  );   break;
+      case CarlendarDisplay.DATE  : this.hover.add(CarlendarDateArrow[arrowKey] , 'day'   );
+    }
+    this.selecting = true;
+    this.refreshFn({hoverAt: this.hoverID});
   }
 
   private generateCarlendarDate(): EmptyValue<{id: number; text: number | string;}>[][] {
@@ -215,7 +228,7 @@ class FocusMoment {
       const week: EmptyValue<{id: number; text: number;}>[] = [null, null, null, null, null, null, null];
 
       for (let wi = sd.isoWeekday() % 7; wi < 7 && di <= cnt; sd.add(1, 'day')) week[wi++] = {
-        id   : parseFloat(sd.format(FocusMoment.DefaultFormat)),
+        id   : parseFloat(sd.format(CarlendarRemote.DefaultFormat)),
         text : di++
       };
       result.push(week);
@@ -225,7 +238,7 @@ class FocusMoment {
 
   private generateCarlendarMonth(): EmptyValue<{id: number; text: number | string;}>[][] {
     const result: EmptyValue<{id: number; text: number | string;}>[][] = [];
-    const curr = moment(`${this.hover.format('YYYY')}0101`, FocusMoment.DefaultFormat);
+    const curr = moment(`${this.hover.format('YYYY')}0101`, CarlendarRemote.DefaultFormat);
 
     for (let mi = 0; mi < 12; ) {
       const line: EmptyValue<{id: number; text: string;}>[] = [null, null, null, null];
@@ -242,7 +255,7 @@ class FocusMoment {
   private generateCarlendarYear(): EmptyValue<{id: number; text: number | string;}>[][] {
     const result: EmptyValue<{id: number; text: number | string;}>[][] = [];
     let   startY = this.startYear;
-    const maxY   = startY + FocusMoment.YearPageSize;
+    const maxY   = startY + CarlendarRemote.YearPageSize;
     
     while (startY < maxY) {
       const line: EmptyValue<{id: number; text: number;}>[] = [null, null, null, null];
@@ -267,6 +280,6 @@ export {
   HoverAt,
   ICarlendarMenu,
   IGroupOptions,
-  FocusMoment
+  CarlendarRemote
 };
 export default TabacoFieldVue;
