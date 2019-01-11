@@ -63,7 +63,9 @@
     format    : overrideFormat
   })">
     <div ref="dropdown" slot="editor" slot-scope="{setFocused}" class="dropdown datepicker editor"
-      v-dropdown="setFocused" v-dropdown-lock v-arrow="focus.getArrowOptions(doRefreshMenu)">
+      v-dropdown="setFocused" v-dropdown-lock v-dropdown-close="() => doResetFocusMoment()"
+      v-arrow="focus.getArrowOptions(doRefreshMenu)">
+
       <input ref="toggle" type="text" v-model="date" v-dropdown-toggle
         v-autofocus="() => $($refs.toggle).dropdown('toggle')" />
 
@@ -120,6 +122,7 @@
 </template>
 
 <script lang="ts">
+  import { VNodeDirective } from 'vue';
   import { Component, Prop } from 'vue-property-decorator';
   import moment, { Moment } from 'moment';
   import $ from 'jquery';
@@ -142,11 +145,15 @@
     },
     directives: {
       arrow,
+      autorevise,
       autofocus,
       dropdown,
       dropdownLock,
       dropdownToggle,
-      autorevise
+      dropdownClose: {
+        bind: (el: HTMLElement, binding: VNodeDirective) =>
+          binding.value instanceof Function ? $(el).on('hidden.bs.dropdown', binding.value) : null
+      }
     }
   })
   export default class TabacoDatepicker extends TabacoFieldVue {
@@ -159,9 +166,8 @@
     @Prop({default: 'YYYY/MM/DD'}) private moment?: string;
 
     set date(v: TbcDate) {
-      this.mval    = moment.utc(v, 'string' === typeof v ? this.moment : undefined);
-      this.focus   = new FocusMoment(this.mval);
-      this.hoverAt = this.focus.hoverID;
+      this.mval = moment.utc(v, 'string' === typeof v ? this.moment : undefined);
+      this.doResetFocusMoment();
     }
 
     get date(): TbcDate {
@@ -189,10 +195,15 @@
       return !this.mval.isValid();
     }
 
+    doResetFocusMoment(): void {
+      this.focus   = new FocusMoment(this.mval);
+      this.hoverAt = this.focus.hoverID;
+    }
+
     doRefreshMenu(res: ICarlendarMenu): void {
       this.hoverAt = res.hoverAt;
 
-      if ('string' === typeof res.selected && res.selected.trim().length > 0) {
+      if ('string' === typeof res.selected) {
         this.date = res.selected;
         ($(this.$refs.dropdown) as any).dropdown('toggle');
       }
