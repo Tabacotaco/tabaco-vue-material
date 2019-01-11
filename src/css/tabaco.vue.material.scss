@@ -124,11 +124,12 @@
   position: relative;
 
   &::before {
-    position: absolute;
+    position: sticky;
     display: block;
     font: normal normal normal 14px/1 FontAwesome;
     content: "\f110";
     font-size: 48px;
+    width: 48px;
     z-index: 11;
     color: white;
     top: calc((100% - 48px) / 2);

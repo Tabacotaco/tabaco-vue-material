@@ -35,7 +35,7 @@
           <TabacoCombobox label="Main Theme" :color="themeColor" :def="6" :sm="4" :disabled="disabled"
             valueField="code" :options="colorMenu.filter(opt => opt.code != themeColor)" :format="dataModel => dataModel.text" v-model="mainColor">
 
-            <span slot="option" slot-scope="{dataModel, displayText, index}">
+            <span slot="option" slot-scope="{dataModel, displayText}">
               <i class="fa fa-paint-brush mr-2" /> {{displayText}}
             </span>
           </TabacoCombobox>
@@ -43,7 +43,7 @@
           <TabacoCombobox label="Field Theme" :color="themeColor" :def="6" :sm="4" :disabled="disabled"
             valueField="code" :options="colorMenu.filter(opt => opt.code != mainColor)" :format="dataModel => dataModel.text" v-model="themeColor">
 
-            <span slot="option" slot-scope="{dataModel, displayText, index}">
+            <span slot="option" slot-scope="{dataModel, displayText}">
               <i class="fa fa-paint-brush mr-2" /> {{displayText}}
             </span>
           </TabacoCombobox>
@@ -72,7 +72,7 @@
           <TabacoMultiCombobox label="Members" :color="themeColor" :disabled="disabled"
             valueField="code" :options="memberMenu" :format="dataModel => dataModel.name" v-model="memberGroup">
 
-            <span slot="option" slot-scope="{dataModel, displayText, index}">
+            <span slot="option" slot-scope="{dataModel, displayText}">
               <i class="fa fa-paint-brush mr-2" /> {{displayText}}
             </span>
           </TabacoMultiCombobox>
