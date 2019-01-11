@@ -41,12 +41,12 @@
           & td > a.dropdown-item {
             cursor: pointer; border-radius: 13.5px;
 
+            &.hover, &.active { text-align: center !important; }
             &:not(.disabled) { cursor: pointer; }
             &.disabled { cursor: not-allowed; }
             &:hover { background-color: unset; }
             &.hover:not(.disabled) {
               color: white !important;
-              text-align: center !important;
               background-color: #6c757d !important;
             }
           }
@@ -102,10 +102,11 @@
           <tbody>
             <tr v-for="(list, row) in focus.getCarlendars()" :key="`week-${row}`">
               <td v-for="(item, col) in list" :key="`cell-${col}`" :class="focus.textAlign">
-                <a v-if="item !== null" class="dropdown-item p-1"
+                <a v-if="item !== null" class="dropdown-item p-1" :data-id="item.id"
                   @mouseenter="focus.asHover(item.id).then(doRefreshMenu)"
                   @click="focus.asSelected(item.id).then(doRefreshMenu)" :class="{
-                    hover: hoverAt === item.id
+                    hover  : hoverAt === item.id,
+                    active : focus.selectedID === item.id
                   }">
                   {{item.text}}
                 </a>

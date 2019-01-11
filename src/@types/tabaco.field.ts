@@ -101,6 +101,10 @@ class FocusMoment {
     }
   }
 
+  get selectedID(): number {
+    return parseFloat(this.selected);
+  }
+
   get hoverID(): number {
     switch (this.dscode) {
       case CarlendarDisplay.YEAR  : return this.year;
@@ -128,9 +132,9 @@ class FocusMoment {
   asPaging(kind: 'next' | 'prev'): Promise<ICarlendarMenu> {
     return new Promise<ICarlendarMenu>(resolve => {
       switch (this.dscode) {
-        case CarlendarDisplay.DATE  : this.hover.add('month' , 1 * ('next' === kind ? 1 : -1)); break;
-        case CarlendarDisplay.MONTH : this.hover.add('year'  , 1 * ('next' === kind ? 1 : -1)); break;
-        case CarlendarDisplay.YEAR  : this.hover.add('year'  , FocusMoment.YearPageSize * ('next' === kind ? 1 : -1));
+        case CarlendarDisplay.DATE  : this.hover.add(1 * ('next' === kind ? 1 : -1), 'month' ); break;
+        case CarlendarDisplay.MONTH : this.hover.add(1 * ('next' === kind ? 1 : -1), 'year'  ); break;
+        case CarlendarDisplay.YEAR  : this.hover.add(FocusMoment.YearPageSize * ('next' === kind ? 1 : -1), 'year');
       }
       resolve({hoverAt: this.hoverID});
     });
@@ -158,11 +162,12 @@ class FocusMoment {
 
           return {hoverAt: this.hoverID};
         case CarlendarDisplay.MONTH:
-          this.dscode   = CarlendarDisplay.DATE;
+          this.dscode = CarlendarDisplay.DATE;
 
           return {hoverAt: this.hoverID};
         case CarlendarDisplay.DATE:
           this.selected = this.hover.format(FocusMoment.DefaultFormat);
+          this.hover    = moment.invalid();
 
           return {hoverAt: this.hoverID, selected: this.selected};
       }
@@ -193,9 +198,9 @@ class FocusMoment {
   private asArrow(arrowKey: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'): Promise<ICarlendarMenu> {
     return new Promise<ICarlendarMenu>(resolve => {
       switch (this.dscode) {
-        case CarlendarDisplay.MONTH : this.hover.add('month' , CarlendarYmArrow[arrowKey]);   break;
-        case CarlendarDisplay.YEAR  : this.hover.add('year'  , CarlendarYmArrow[arrowKey]);   break;
-        case CarlendarDisplay.DATE  : this.hover.add('day'   , CarlendarDateArrow[arrowKey]);
+        case CarlendarDisplay.MONTH : this.hover.add(CarlendarYmArrow[arrowKey]   , 'month' );   break;
+        case CarlendarDisplay.YEAR  : this.hover.add(CarlendarYmArrow[arrowKey]   , 'year'  );   break;
+        case CarlendarDisplay.DATE  : this.hover.add(CarlendarDateArrow[arrowKey] , 'day'   );
       }
       resolve({hoverAt: this.hoverID});
     });
@@ -209,7 +214,7 @@ class FocusMoment {
     for (let di = 1; di <= cnt; ) {
       const week: EmptyValue<{id: number; text: number;}>[] = [null, null, null, null, null, null, null];
 
-      for (let wi = sd.isoWeekday() % 7; wi < 7 && di <= cnt; sd.add('day', 1)) week[wi++] = {
+      for (let wi = sd.isoWeekday() % 7; wi < 7 && di <= cnt; sd.add(1, 'day')) week[wi++] = {
         id   : parseFloat(sd.format(FocusMoment.DefaultFormat)),
         text : di++
       };
@@ -225,7 +230,7 @@ class FocusMoment {
     for (let mi = 0; mi < 12; ) {
       const line: EmptyValue<{id: number; text: string;}>[] = [null, null, null, null];
 
-      for (let i = 0; i < line.length; i++, mi++, curr.add('month', 1)) line[i] = {
+      for (let i = 0; i < line.length; i++, mi++, curr.add(1, 'month')) line[i] = {
         id   : parseFloat(curr.format('YYYYMM')),
         text : curr.format('MMM')
       };
