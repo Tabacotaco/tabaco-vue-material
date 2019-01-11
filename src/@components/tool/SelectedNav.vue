@@ -33,7 +33,7 @@
 <template>
   <ul class="nav nav-pills selected-options" v-dropdown-toggle="toggle">
     <li v-for="(dataModel, index) in list" :key="`nav-${index}`" class="nav-item">
-      <a class="nav-link" :class="[`bg-${getColorCode(color)}`, `text-${getTextColor(color)}`]">
+      <a class="nav-link" :class="[`bg-${getThemeColor(color)}`, `text-${getTextColor(color)}`]">
         <button type="button" class="close ml-2" :class="[`text-${getTextColor(color)}`]" :disabled="disabled"
           @click="disabled ? null : $emit('remove', dataModel)">
           <span>&times;</span>
@@ -50,13 +50,13 @@
 <script lang="ts">
   import { Vue, Component, Prop } from 'vue-property-decorator';
 
-  import { Color, getColorCode, getTextColor } from '@/@types/tabaco.layout';
+  import { Color, getThemeColor, getTextColor } from '@/@types/tabaco.layout';
   import { dropdownToggle } from '@/@directives/editor.directive';
 
   @Component({
     inject: {
-      getColorCode : {default: () => getColorCode},
-      getTextColor : {default: () => getTextColor}
+      getThemeColor : {default: () => getThemeColor},
+      getTextColor  : {default: () => getTextColor}
     },
     directives: {
       dropdownToggle

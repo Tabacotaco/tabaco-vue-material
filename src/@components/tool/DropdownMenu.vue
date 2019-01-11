@@ -13,7 +13,7 @@
 </style>
 
 <template>
-  <div v-autorevise="offset" class="tbc-dropdown-menu dropdown-menu light" :class="[`tbc-${getColorCode(color)}`]">
+  <div v-autorevise="offset" class="tbc-dropdown-menu dropdown-menu light" :class="[`tbc-${getThemeColor(color)}`]">
     <a v-for="(dataModel, index) in list" :key="`option-${index}`"
       @click="$emit('click', dataModel)"
       @mouseover="$emit('update:hoverAt', index)"
@@ -36,7 +36,7 @@
 
   import { autorevise } from '@/@directives/editor.directive';
 
-  import { Color, getColorCode } from '@/@types/tabaco.layout';
+  import { Color, getThemeColor } from '@/@types/tabaco.layout';
   import { HoverAt } from '@/@types/tabaco.field';
 
 
@@ -44,7 +44,7 @@
 
   @Component({
     inject: {
-      getColorCode : {default: () => getColorCode}
+      getThemeColor : {default: () => getThemeColor}
     },
     directives: {
       autorevise

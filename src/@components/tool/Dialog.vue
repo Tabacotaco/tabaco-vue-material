@@ -20,7 +20,7 @@
 <template>
   <div ref="mask" class="tabaco-msg modal" :class="mainCLS" @click="closeByMask($event)">
     <div v-if="isShown === true" class="modal-dialog">
-      <div class="modal-content tbc-theme bright" :class="[`tbc-${colorCode}`]">
+      <div class="modal-content tbc-theme bright" :class="[`tbc-${themeColor}`]">
         <div class="modal-header">
           <h5 class="modal-title">{{title}}</h5>
 
@@ -87,7 +87,7 @@
     }
 
     getButtonCls(btn: IButtonOpts): string {
-      return `${btn.type === Button.CANCEL ? 'light' : 'bright'} tbc-${this.colorCode}`;
+      return `${btn.type === Button.CANCEL ? 'light' : 'bright'} tbc-${this.themeColor}`;
     }
 
     show(): LongPromise<PopupResult> {

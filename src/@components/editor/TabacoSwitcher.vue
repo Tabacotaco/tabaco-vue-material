@@ -50,7 +50,7 @@
     </span>
 
     <div slot="tool" slot-scope="{isFocused, setFocused}" class="tabaco-switcher-btn"
-      :class="[`bg-${turnOn ? colorCode : 'secondary'}`, turnOn ? 'on' : 'off']"
+      :class="[`bg-${turnOn ? themeColor : 'secondary'}`, turnOn ? 'on' : 'off']"
       @click="isDisabled ? null : (setFocused(true) || setTurnOn().then(() => setFocused(false)))">
 
       <span class="rounded-circle bg-white" />

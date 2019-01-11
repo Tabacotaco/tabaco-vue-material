@@ -1,8 +1,8 @@
 import { Vue, Prop } from 'vue-property-decorator';
-import moment, { Moment, unitOfTime } from 'moment';
+import moment, { Moment } from 'moment';
 import Numeral from 'numeral';
 
-import { Color, SizeType, getColorCode } from '@/@types/tabaco.layout';
+import { Color, SizeType, getThemeColor } from '@/@types/tabaco.layout';
 
 
 type DisplayFormat<T> = ((value: T) => string);
@@ -47,8 +47,8 @@ abstract class TabacoFieldVue extends Vue {
 
   abstract isEmpty(): boolean;
 
-  get colorCode(): string {
-    return getColorCode(this.color);
+  get themeColor(): string {
+    return getThemeColor(this.color);
   }
 
   get isDisabled(): boolean {

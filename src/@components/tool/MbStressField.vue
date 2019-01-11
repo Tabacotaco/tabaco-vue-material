@@ -20,7 +20,7 @@
         }
 
         & > div.modal-body {
-          height: calc(100vh - 112px);
+          height: calc(100vh - 152px);
           overflow-y: auto;
           min-height: 110px;
         }
@@ -77,7 +77,7 @@
 <script lang="ts">
   import { Vue, Component, Prop } from 'vue-property-decorator';
 
-  import { getColorCode } from '@/@types/tabaco.layout';
+  import { getThemeColor } from '@/@types/tabaco.layout';
   import { IGroupOptions } from '@/@types/tabaco.field';
   import { Button } from '@/@types/tabaco.popup';
 
@@ -111,18 +111,18 @@
       return 'string' === typeof invalidMsg && invalidMsg.trim().length > 0;
     }
 
-    get stressBtnCLS(): string[] { return [`tbc-${getColorCode(this.options.color)}`] }
+    get stressBtnCLS(): string[] { return [`tbc-${getThemeColor(this.options.color)}`] }
 
     get stressCSS(): any {
       return {'background-color': `rgba(${[
-        MbStressField.convert2CNumbers(getColorCode(this.options.color))
+        MbStressField.convert2CNumbers(getThemeColor(this.options.color))
       ]}, .7) !important`};
     }
 
     get stressCLS(): string[] {
       return [
-        `tbc-${getColorCode(this.options.color)}`,
-        `text-${'light' === getColorCode(this.options.color) ? 'dark' : 'white'}`
+        `tbc-${getThemeColor(this.options.color)}`,
+        `text-${'light' === getThemeColor(this.options.color) ? 'dark' : 'white'}`
       ];
     }
 

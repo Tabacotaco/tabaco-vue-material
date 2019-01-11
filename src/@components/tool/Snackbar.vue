@@ -95,7 +95,7 @@
     get mainCLS(): string[] {
       return [
         Snackbar.MAIN_CLASS,
-        `bg-${this.colorCode}`,
+        `bg-${this.themeColor}`,
         this.textClass,
         this.isShown ? 'd-flex' : 'd-none',
         (() => {

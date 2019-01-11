@@ -46,12 +46,12 @@
       v-model="number" @focus="setFocused(true)" @blur="setFocused(false)" />
 
     <div slot="tool" slot-scope="{isFocused, setFocused}" class="tabaco-number-spinner btn-group-vertical">
-      <button type="button" class="btn" tabindex="-1" :class="[isFocused? `btn-${colorCode}` : 'btn-secondary']" :disabled="isDisabled"
+      <button type="button" class="btn" tabindex="-1" :class="[isFocused? `btn-${themeColor}` : 'btn-secondary']" :disabled="isDisabled"
         @click="onSpinner(true)" @focus="setFocused(true)" @blur="setFocused(false)">
         <i class="fa fa-caret-up" />
       </button>
 
-      <button type="button" class="btn" tabindex="-1" :class="[isFocused? `btn-${colorCode}` : 'btn-secondary']" :disabled="isDisabled"
+      <button type="button" class="btn" tabindex="-1" :class="[isFocused? `btn-${themeColor}` : 'btn-secondary']" :disabled="isDisabled"
         @click="onSpinner(false)" @focus="setFocused(true)" @blur="setFocused(false)">
         <i class="fa fa-caret-down" />
       </button>

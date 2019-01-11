@@ -50,8 +50,7 @@
       </SelectedNav>
     </span>
 
-    <DropdownMenu slot="mbstress" :offset="false" :color="color" :list="datalist" :hoverAt.sync="hoverAt"
-      :actived="d => isSelected(d)" @click="setSelected($event)">
+    <DropdownMenu slot="mbstress" :offset="false" :color="color" :list="datalist" :actived="d => isSelected(d)" @click="setSelected($event)">
       <template slot="option" slot-scope="{dataModel, index}">
         <slot name="option" :dataModel="dataModel" :displayText="displayFormat(dataModel)" :index="index">
           {{displayFormat(dataModel)}}

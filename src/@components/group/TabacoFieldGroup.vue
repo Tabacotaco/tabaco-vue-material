@@ -108,7 +108,7 @@
 <script lang="ts">
   import { Vue, Component, Prop } from 'vue-property-decorator';
 
-  import { Color, ColumnSize, SizeType, isMobileLayout, getColorCode } from '@/@types/tabaco.layout';
+  import { Color, ColumnSize, SizeType, isMobileLayout, getThemeColor } from '@/@types/tabaco.layout';
   import { IGroupOptions } from '@/@types/tabaco.field';
   import { Button } from '@/@types/tabaco.popup';
   import { scrollTop } from '@/@directives/editor.directive';
@@ -176,7 +176,7 @@
 
       return [
         mainClass,
-        `theme-${getColorCode(this.options.color)}`,
+        `theme-${getThemeColor(this.options.color)}`,
         ...(new ColumnSize({def, sm, md, lg, xl})).columnCls,
         ...Object.keys(labels).filter(cls => (labels as any)[cls] === true)
       ];

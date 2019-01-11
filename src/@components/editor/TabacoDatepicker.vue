@@ -2,56 +2,18 @@
   div.tabaco-field-group.tabaco-datepicker {
     &:not(.disabled) > span.display { cursor: pointer; }
 
-    & > div.editor {
-      & > input[data-toggle] {
-        display: block !important;
-        width: 100%;
-        padding-right: 18px;
-        background-color: rgba(0, 0, 0, 0) !important;
-        font-size: 1rem !important;
-        line-height: 1.4;
-        -webkit-box-shadow: none !important;
-        box-shadow: none !important;
-        outline: none !important;
-        border-width: 0 !important;
-        color: inherit;
-      }
-
-      & > div.dropdown-menu.dropdown-calendar {
-        max-height: none !important;
-
-        & > nav.navbar {
-          min-width: 15rem;
-
-          & button.tbc-dropdown {
-            padding-right: 2rem;
-          }
-        }
-
-        & table.table {
-          & td, & th {
-            padding: .25rem;
-            line-height: 1.2;
-            width: 14.2857% !important;
-            max-width: 35px !important;
-          }
-
-          & th { text-align: center; }
-
-          & td > a.dropdown-item {
-            cursor: pointer; border-radius: 13.5px;
-
-            &.hover, &.active { text-align: center !important; }
-            &:not(.disabled) { cursor: pointer; }
-            &.disabled { cursor: not-allowed; }
-            &:hover { background-color: unset; }
-            &.hover:not(.disabled) {
-              color: white !important;
-              background-color: #6c757d !important;
-            }
-          }
-        }
-      }
+    & > div.editor > input[data-toggle] {
+      display: block !important;
+      width: 100%;
+      padding-right: 18px;
+      background-color: rgba(0, 0, 0, 0) !important;
+      font-size: 1rem !important;
+      line-height: 1.4;
+      -webkit-box-shadow: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      border-width: 0 !important;
+      color: inherit;
     }
   }
 </style>
@@ -63,56 +25,19 @@
     format    : overrideFormat
   })">
     <div ref="dropdown" slot="editor" slot-scope="{setFocused}" class="dropdown datepicker editor"
-      v-dropdown="setFocused" v-dropdown-lock v-dropdown-close="() => doResetRemote()"
-      v-arrow="remote.arrowOptions">
+      v-dropdown="setFocused" v-dropdown-lock v-arrow="{
+        up      : () => $refs.menu.asArrow('UP'   ), left  : () => $refs.menu.asArrow('LEFT'  ),
+        down    : () => $refs.menu.asArrow('DOWN' ), right : () => $refs.menu.asArrow('RIGHT' ),
+        confirm : () => $refs.menu.asSelected()
+      }">
 
       <input ref="toggle" type="text" v-model="date" v-dropdown-toggle
         v-autofocus="() => $($refs.toggle).dropdown('toggle')" />
 
-      <div ref="menu" v-autorevise class="dropdown-menu light py-0 dropdown-calendar" :class="[`tbc-${colorCode}`]">
-        <nav class="navbar px-2" :class="navbarCLS">
-          <form class="form-inline mr-auto">
-            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]"
-              @click="remote.asSwitch()">
-              {{remote.switcherLabel}} <i class="fa" :class="[remote.switcherIcon]" />
-            </button>
-          </form>
-
-          <form class="form-inline">
-            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]" @click="remote.asPaging('prev')">
-              <i class="fa fa-angle-left" />
-            </button>
-
-            <button type="button" class="btn border-0" :class="[`btn-${colorCode}`]" @click="remote.asPaging('next')">
-              <i class="fa fa-angle-right" />
-            </button>
-          </form>
-        </nav>
-
-        <table class="table">
-          <thead v-if="remote.showWeekHeader" class="bright" :class="[`tbc-${colorCode}`]">
-            <tr>
-              <th>S<sub>un</sub></th>  <th>M<sub>on</sub></th>
-              <th>T<sub>ue</sub></th>  <th>W<sub>ed</sub></th>
-              <th>T<sub>hu</sub></th>  <th>F<sub>ri</sub></th>
-              <th>S<sub>at</sub></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr v-for="(list, row) in remote.getCarlendars()" :key="`week-${row}`">
-              <td v-for="(item, col) in list" :key="`cell-${col}`" :class="remote.textAlign">
-                <a v-if="item !== null" class="dropdown-item p-1" :class="remote.getItemClass(item.id, hoverAt)"
-                  @mouseenter="remote.asHover(item.id)"
-                  @click="remote.asSelected(item.id)">
-                  {{item.text}}
-                </a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <CarlendarMenu ref="menu" :color="color" :value="mval" @refresh="onMenuRefresh($event)" />
     </div>
+    
+    <CarlendarMenu slot="mbstress" :offset="false" ref="menu" :color="color" :value="mval" @refresh="onMenuRefresh($event)" />
   </TabacoFieldGroup>
 </template>
 
@@ -122,25 +47,25 @@
   import moment, { Moment } from 'moment';
   import $ from 'jquery';
 
-  import { getTextColor } from '@/@types/tabaco.layout';
   import TabacoFieldGroup from '@/@components/group/TabacoFieldGroup.vue';
+  import CarlendarMenu from '@/@components/tool/CarlendarMenu.vue';
 
-  import { arrow, autofocus, dropdown, dropdownLock, dropdownToggle, autorevise } from '@/@directives/editor.directive';
-  import TabacoFieldVue, { DisplayFormat, CarlendarRemote, HoverAt, ICarlendarMenu } from '@/@types/tabaco.field';
+  import { arrow, autofocus, dropdown, dropdownLock, dropdownToggle } from '@/@directives/editor.directive';
+  import TabacoFieldVue, { DisplayFormat, HoverAt, ICarlendarMenu } from '@/@types/tabaco.field';
+
 
   type TbcDate = string | number;
 
   @Component({
     inject: {
-      $            : {default: () => $},
-      getTextColor : {default: () => getTextColor}
+      $: {default: () => $}
     },
     components: {
-      TabacoFieldGroup
+      TabacoFieldGroup,
+      CarlendarMenu
     },
     directives: {
       arrow,
-      autorevise,
       autofocus,
       dropdown,
       dropdownLock,
@@ -152,7 +77,6 @@
     }
   })
   export default class TabacoDatepicker extends TabacoFieldVue {
-    private remote!: CarlendarRemote;
     private hoverAt: HoverAt = null;
 
     mval: Moment = moment.utc('');
@@ -162,15 +86,10 @@
 
     set date(v: TbcDate) {
       this.mval = moment.utc(v, 'string' === typeof v ? this.moment : undefined);
-      this.doResetRemote();
     }
 
     get date(): TbcDate {
       return !this.mval || !this.mval.isValid ? '' : this.mval.format(this.moment);
-    }
-
-    get navbarCLS(): string[] {
-      return [`bg-${this.color}`, `navbar-${getTextColor(this.color)}`];
     }
 
     get overrideFormat(): DisplayFormat<TbcDate> {
@@ -190,15 +109,11 @@
       return !this.mval.isValid();
     }
 
-    doResetRemote(): void {
-      this.remote = new CarlendarRemote(this.mval, (res: ICarlendarMenu): void => {
-        this.hoverAt = res.hoverAt;
-
-        if ('string' === typeof res.selected) {
-          this.date = res.selected;
-          ($(this.$refs.dropdown) as any).dropdown('toggle');
-        }
-      });
+    onMenuRefresh(res: ICarlendarMenu): void {
+      if ('string' === typeof res.selected) {
+        this.date = res.selected;
+        ($(this.$refs.dropdown) as any).dropdown('toggle');
+      }
     }
   }
 </script>

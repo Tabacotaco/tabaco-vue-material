@@ -1,7 +1,7 @@
 import { Vue, Prop } from 'vue-property-decorator';
 import { ComponentOptions, DirectiveOptions, DirectiveFunction, VNodeDirective, VNode } from 'vue';
 
-import { Color, getColorCode } from '@/@types/tabaco.layout';
+import { Color, getThemeColor, getTextColor } from '@/@types/tabaco.layout';
 
 
 enum Button { CONFIRM, CANCEL }
@@ -83,12 +83,12 @@ abstract class PopupVue extends Vue {
     return 'string' === typeof this.title && this.title.trim().length > 0;
   }
 
-  get colorCode(): string {
-    return getColorCode(this.color);
+  get themeColor(): string {
+    return getThemeColor(this.color);
   }
 
   get textClass(): string {
-    return `text-${['warning', 'light'].indexOf(this.colorCode) >= 0 ? 'dark' : 'white'}`;
+    return `text-${getTextColor(this.color)}`;
   }
 
   isBtnIconValid(btn: IButtonOpts): boolean {
