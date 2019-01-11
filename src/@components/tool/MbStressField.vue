@@ -20,7 +20,7 @@
         }
 
         & > div.modal-body {
-          height: calc(100vh - 152px);
+          height: calc(100vh - 178px);
           overflow-y: auto;
           min-height: 110px;
         }
